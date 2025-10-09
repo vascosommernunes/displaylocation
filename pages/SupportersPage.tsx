@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useSupporters } from '../context/SupportersContext';
 import SupporterCard from '../components/SupporterCard';

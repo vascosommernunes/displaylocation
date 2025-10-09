@@ -1,5 +1,3 @@
-// Forcing a new deployment at [current 09102025/2220]
-
 // functions/api/[[route]].ts
 
 // This is a workaround for TypeScript environments that don't have Cloudflare's
@@ -149,16 +147,41 @@ async function handleGetSupporters(env: Env) {
  */
 async function sendVerificationEmail(apiKey: string, toEmail: string, toName: string, verificationLink: string) {
   const emailHtml = `
-    <div style="font-family: sans-serif; line-height: 1.6;">
-      <h2>Confirm your support for displaylocation.org</h2>
-      <p>Hi ${toName},</p>
-      <p>Thank you for supporting the proposal to add the 'displaylocation' property to schema.org. Please click the link below to confirm your support and be publicly listed on the supporters page.</p>
-      <p style="margin: 20px 0;">
-        <a href="${verificationLink}" style="background-color: #345d62; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px;">Click here to confirm your support</a>
-      </p>
-      <p>If you did not sign this petition, you can safely ignore this email.</p>
-      <p>Thanks,<br/>The displaylocation.org Team</p>
-    </div>
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .header { background-color: #345d62; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .header h2 { margin: 0; }
+        .content { padding: 30px 20px; }
+        .button { display: inline-block; background-color: #ec4899; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .footer { font-size: 0.9em; color: #777; text-align: center; margin-top: 20px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h2>Confirm your support</h2>
+        </div>
+        <div class="content">
+          <p>Hi ${toName},</p>
+          <p>Thank you for supporting the proposal to add the 'displaylocation' property to schema.org. Please click the button below to confirm your support and be publicly listed on the supporters page.</p>
+          <p style="text-align: center; margin: 30px 0;">
+            <a href="${verificationLink}" class="button">Click here to confirm your support</a>
+          </p>
+          <p>If you did not sign this petition, you can safely ignore this email.</p>
+          <p>Thanks,<br/>The displaylocation.org Team</p>
+        </div>
+        <div class="footer">
+          <p>displaylocation.org</p>
+        </div>
+      </div>
+    </body>
+    </html>
   `;
 
   const response = await fetch('https://api.resend.com/emails', {

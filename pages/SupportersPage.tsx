@@ -1,48 +1,54 @@
-import React from 'react';
-import { useSupporters } from '../context/SupportersContext';
-import SupporterCard from '../components/SupporterCard';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import { Supporter } from '../types';
 
-const SupportersPage: React.FC = () => {
-  const { supporters, loading, error } = useSupporters();
+// We only need a subset of the Supporter type for public display
+type PublicSupporter = Omit<Supporter, 'email'>;
 
-  const renderContent = () => {
-    if (loading) {
-      return <p className="text-gray-500">Loading supporters...</p>;
-    }
-    if (error) {
-      return <p className="text-red-500">Error: {error}</p>;
-    }
-    if (supporters.length === 0) {
-      return (
-        <div className="text-center py-12 px-6 bg-white rounded-lg border border-gray-200">
-          <p className="text-gray-500">No verified supporters yet. Be the first to sign the petition!</p>
-        </div>
-      );
-    }
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {supporters.map((supporter, index) => (
-          // The public supporter object doesn't contain an email.
-          <SupporterCard key={`${supporter.company}-${supporter.name}-${index}`} supporter={supporter as any} />
-        ))}
-      </div>
-    );
-  };
+interface SupportersContextType {
+  supporters: PublicSupporter[];
+  loading: boolean;
+  error: string | null;
+}
+
+const SupportersContext = createContext<SupportersContextType | undefined>(undefined);
+
+export const SupportersProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [supporters, setSupporters] = useState<PublicSupporter[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSupporters = async () => {
+      try {
+        const response = await fetch(`${window.location.origin}/api/supporters`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch supporters.');
+        }
+        const data: PublicSupporter[] = await response.json();
+        setSupporters(data);
+      } catch (err: any) {
+        setError(err.message || 'An unknown error occurred.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSupporters();
+  }, []);
+
+  // addSupporter is no longer needed here as submissions are handled by the form directly.
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="text-center mb-12">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Our Supporters</h1>
-        <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
-          We are proud to be supported by a growing community of businesses and institutions who believe in better representing physical display locations on the web.
-        </p>
-      </div>
-      
-      <div className="text-center">
-        {renderContent()}
-      </div>
-    </div>
+    <SupportersContext.Provider value={{ supporters, loading, error }}>
+      {children}
+    </SupportersContext.Provider>
   );
 };
 
-export default SupportersPage;
+export const useSupporters = (): SupportersContextType => {
+  const context = useContext(SupportersContext);
+  if (!context) {
+    throw new Error('useSupporters must be used within a SupportersProvider');
+  }
+  return context;
+};

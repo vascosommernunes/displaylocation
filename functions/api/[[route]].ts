@@ -166,7 +166,7 @@ async function sendVerificationEmail(apiKey: string, toEmail: string, toName: st
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'DisplayLocation.org <onboarding@resend.dev>', // Resend's free tier requires this 'from' address
+      from: 'hello@displaylocation.org',
       to: [toEmail],
       subject: 'Confirm Your Support for displaylocation.org',
       html: emailHtml,

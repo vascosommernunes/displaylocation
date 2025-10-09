@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
-import { Supporter } from '../types';
+
+// This interface is for form state, not the global Supporter type
+interface FormData {
+  name: string;
+  email: string;
+  company: string;
+  role: string;
+}
 
 const PetitionPage: React.FC = () => {
-  const [formData, setFormData] = useState<Supporter>({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
     company: '',
@@ -32,21 +39,17 @@ const PetitionPage: React.FC = () => {
     setLoading(true);
     setError('');
 
-    // In a real application, you would send this data to your backend API.
-    // The backend would handle database storage and sending a verification email.
     try {
-      // Example:
-      // const response = await fetch('/api/add-supporter', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ ...formData, subscribe }),
-      // });
-      // if (!response.ok) {
-      //   throw new Error('Something went wrong. Please try again.');
-      // }
-      
-      // Simulate network request
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('/api/supporters', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, subscribe }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Something went wrong. Please try again.');
+      }
       
       setSubmitted(true);
     } catch (err: any) {

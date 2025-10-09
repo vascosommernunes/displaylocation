@@ -3,7 +3,31 @@ import { useSupporters } from '../context/SupportersContext';
 import SupporterCard from '../components/SupporterCard';
 
 const SupportersPage: React.FC = () => {
-  const { supporters } = useSupporters();
+  const { supporters, loading, error } = useSupporters();
+
+  const renderContent = () => {
+    if (loading) {
+      return <p className="text-gray-500">Loading supporters...</p>;
+    }
+    if (error) {
+      return <p className="text-red-500">Error: {error}</p>;
+    }
+    if (supporters.length === 0) {
+      return (
+        <div className="text-center py-12 px-6 bg-white rounded-lg border border-gray-200">
+          <p className="text-gray-500">No verified supporters yet. Be the first to sign the petition!</p>
+        </div>
+      );
+    }
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {supporters.map((supporter, index) => (
+          // The public supporter object doesn't contain an email.
+          <SupporterCard key={`${supporter.company}-${supporter.name}-${index}`} supporter={supporter as any} />
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -13,18 +37,10 @@ const SupportersPage: React.FC = () => {
           We are proud to be supported by a growing community of businesses and institutions who believe in better representing physical display locations on the web.
         </p>
       </div>
-
-      {supporters.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {supporters.map((supporter, index) => (
-            <SupporterCard key={`${supporter.company}-${supporter.name}-${index}`} supporter={supporter} />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-12 px-6 bg-white rounded-lg border border-gray-200">
-          <p className="text-gray-500">No supporters yet. Be the first to sign the petition!</p>
-        </div>
-      )}
+      
+      <div className="text-center">
+        {renderContent()}
+      </div>
     </div>
   );
 };

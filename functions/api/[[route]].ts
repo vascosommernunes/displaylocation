@@ -1,3 +1,5 @@
+// Forcing a new deployment at [current date/time]
+
 // functions/api/[[route]].ts
 
 // This is a workaround for TypeScript environments that don't have Cloudflare's

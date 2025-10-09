@@ -6,7 +6,7 @@ const HomePage: React.FC = () => {
     <div className="max-w-4xl mx-auto text-center">
       <div className="bg-brand p-8 sm:p-12 rounded-lg shadow-lg">
         <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
-          A schema.org property for showrooms, galleries, and display locations.
+          A new schema.org property for showrooms, galleries, and display locations.
         </h1>
         <p className="mt-6 text-lg text-gray-200 max-w-2xl mx-auto">
           For businesses with showrooms and museums with galleries, current schema.org options are inadequate. We propose <code className="bg-brand-dark text-gray-100 px-2 py-1 rounded-md text-base font-mono">displaylocation</code> to clearly articulate where an item can be experienced.

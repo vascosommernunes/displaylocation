@@ -1,54 +1,61 @@
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { Supporter } from '../types';
 
-// We only need a subset of the Supporter type for public display
-type PublicSupporter = Omit<Supporter, 'email'>;
+import React from 'react';
+import { useSupporters } from '../context/SupportersContext';
+import SupporterCard from '../components/SupporterCard';
+import { Link } from 'react-router-dom';
 
-interface SupportersContextType {
-  supporters: PublicSupporter[];
-  loading: boolean;
-  error: string | null;
-}
-
-const SupportersContext = createContext<SupportersContextType | undefined>(undefined);
-
-export const SupportersProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [supporters, setSupporters] = useState<PublicSupporter[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchSupporters = async () => {
-      try {
-        const response = await fetch(`${window.location.origin}/api/supporters`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch supporters.');
-        }
-        const data: PublicSupporter[] = await response.json();
-        setSupporters(data);
-      } catch (err: any) {
-        setError(err.message || 'An unknown error occurred.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSupporters();
-  }, []);
-
-  // addSupporter is no longer needed here as submissions are handled by the form directly.
+const SupportersPage: React.FC = () => {
+  const { supporters, loading, error } = useSupporters();
 
   return (
-    <SupportersContext.Provider value={{ supporters, loading, error }}>
-      {children}
-    </SupportersContext.Provider>
+    <div className="max-w-6xl mx-auto">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Our Supporters</h1>
+        <p className="mt-4 text-xl text-gray-600">
+          A growing list of businesses, institutions, and individuals who see the need for a <code className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-base font-mono">displaylocation</code> property.
+        </p>
+        <p className="mt-4">
+            <Link to="/petition" className="text-brand font-medium hover:underline">
+              Want to see your name here? Sign the petition.
+            </Link>
+        </p>
+      </div>
+
+      {loading && (
+        <div className="text-center">
+          <p className="text-gray-600">Loading supporters...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="text-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Error:</strong>
+          <span className="block sm:inline"> {error}</span>
+        </div>
+      )}
+
+      {!loading && !error && (
+        <>
+          {supporters.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {supporters.map((supporter, index) => (
+                <SupporterCard key={index} supporter={supporter} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600">No supporters have been verified yet. Be the first!</p>
+              <p className="mt-2">
+                <Link to="/petition" className="text-brand font-medium hover:underline">
+                    Sign the petition now.
+                </Link>
+              </p>
+            </div>
+          )}
+        </>
+      )}
+    </div>
   );
 };
 
-export const useSupporters = (): SupportersContextType => {
-  const context = useContext(SupportersContext);
-  if (!context) {
-    throw new Error('useSupporters must be used within a SupportersProvider');
-  }
-  return context;
-};
+export default SupportersPage;

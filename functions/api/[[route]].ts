@@ -27,20 +27,23 @@ export interface Env {
 
 // Main function to handle all incoming requests
 export const onRequest: PagesFunction<Env> = async (context) => {
-  const { request, env } = context;
+  const { request, env, waitUntil } = context;
   const url = new URL(request.url);
 
   // Use a simple router to handle different API paths
   // If the path starts with /api/, handle it with our API logic
   if (url.pathname.startsWith('/api/')) {
     if (url.pathname === '/api/supporters' && request.method === 'POST') {
-      return await handleAddSupporter(request, env);
+      return await handleAddSupporter(request, env, waitUntil);
     }
     if (url.pathname === '/api/supporters' && request.method === 'GET') {
       return await handleGetSupporters(env);
     }
     if (url.pathname === '/api/verify' && request.method === 'GET') {
       return await handleVerifySupporter(request, env);
+    }
+    if (url.pathname === '/api/unsubscribe' && request.method === 'GET') {
+      return await handleUnsubscribe(request, env);
     }
     // If it's an unknown API route, return 404
     return new Response('Not found', { status: 404 });
@@ -55,7 +58,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 /**
  * Handles adding a new supporter from the petition form.
  */
-async function handleAddSupporter(request: Request, env: Env) {
+async function handleAddSupporter(request: Request, env: Env, waitUntil: (promise: Promise<any>) => void) {
   try {
     // The standard `request.json()` method does not accept a generic type argument.
     // The correct approach is to await the result and then cast it to the desired type.
@@ -79,9 +82,13 @@ async function handleAddSupporter(request: Request, env: Env) {
     ).bind(name, email, company, role, token, subscribe ? 1 : 0).run();
     
     // Send the verification email using Resend
-    const verificationLink = `${new URL(request.url).origin}/api/verify?token=${token}`;
+    const origin = new URL(request.url).origin;
+    const verificationLink = `${origin}/api/verify?token=${token}`;
+    const unsubscribeLink = `${origin}/api/unsubscribe?token=${token}`;
     
-    await sendVerificationEmail(env.RESEND_API_KEY, email, name, verificationLink);
+    // Use waitUntil to send emails in the background without blocking the response to the user
+    waitUntil(sendVerificationEmail(env.RESEND_API_KEY, email, name, verificationLink, unsubscribeLink));
+    waitUntil(sendAdminNotificationEmail(env.RESEND_API_KEY, { name, email, company, role }));
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
@@ -124,6 +131,29 @@ async function handleVerifySupporter(request: Request, env: Env) {
 }
 
 /**
+ * Handles a user's request to unsubscribe from the mailing list.
+ */
+async function handleUnsubscribe(request: Request, env: Env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get('token');
+
+  if (!token) {
+    return new Response('Missing token.', { status: 400 });
+  }
+
+  // Update the supporter's status to not be subscribed
+  await env.DB.prepare(
+    `UPDATE supporters SET subscribed = 0 WHERE token = ?`
+  ).bind(token).run();
+
+  // Return a simple confirmation message to the user
+  return new Response('You have been successfully unsubscribed from future updates.', {
+    headers: { 'Content-Type': 'text/html' },
+  });
+}
+
+
+/**
  * Handles fetching the list of verified supporters for the public page.
  */
 async function handleGetSupporters(env: Env) {
@@ -145,7 +175,7 @@ async function handleGetSupporters(env: Env) {
 /**
  * Sends the verification email using the Resend API.
  */
-async function sendVerificationEmail(apiKey: string, toEmail: string, toName: string, verificationLink: string) {
+async function sendVerificationEmail(apiKey: string, toEmail: string, toName: string, verificationLink: string, unsubscribeLink: string) {
   const emailHtml = `
     <!DOCTYPE html>
     <html>
@@ -158,8 +188,7 @@ async function sendVerificationEmail(apiKey: string, toEmail: string, toName: st
         .header { background-color: #345d62; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
         .header h2 { margin: 0; }
         .content { padding: 30px 20px; }
-        .button { display: inline-block; background-color: #ec4899; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; }
-        .footer { font-size: 0.9em; color: #777; text-align: center; margin-top: 20px; }
+        .footer { font-size: 0.8em; color: #777; text-align: center; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;}
       </style>
     </head>
     <body>
@@ -171,13 +200,23 @@ async function sendVerificationEmail(apiKey: string, toEmail: string, toName: st
           <p>Hi ${toName},</p>
           <p>Thank you for supporting the proposal to add the 'displaylocation' property to schema.org. Please click the button below to confirm your support and be publicly listed on the supporters page.</p>
           <p style="text-align: center; margin: 30px 0;">
-            <a href="${verificationLink}" class="button">Click here to confirm your support</a>
+            <a href="${verificationLink}" style="display: inline-block; background-color: #ec4899; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Click here to confirm your support</a>
           </p>
           <p>If you did not sign this petition, you can safely ignore this email.</p>
           <p>Thanks,<br/>The displaylocation.org Team</p>
         </div>
         <div class="footer">
-          <p>displaylocation.org</p>
+          <p style="color: #999; line-height: 1.4; margin-bottom: 15px;">
+            displaylocation.org is an initiative by the team of showroom.fm.<br>
+            Showroom.fm is a service by Innsides Interiors UG (haftungsbeschränkt/limited liability company)<br>
+            Lübecker Straße 26, 10559 Berlin, Germany, Entry in Commercial Register:<br>
+            Register Number HRB 155994 B, Register Court District Court, Charlottenburg<br>
+            Represented by Vasco Sommer-Nunes and Anne-Marie den Hertog.<br>
+            Contact: <a href="mailto:hello@displaylocation.org" style="color: #999;">hello@displaylocation.org</a>
+          </p>
+          <p style="color: #999;">
+            If you wish to unsubscribe from future updates, you can <a href="${unsubscribeLink}" style="color: #999;">do so here</a>.
+          </p>
         </div>
       </div>
     </body>
@@ -203,5 +242,45 @@ async function sendVerificationEmail(apiKey: string, toEmail: string, toName: st
     console.error('Failed to send email:', errorBody);
     // Even if email fails, we don't want to block the user. The submission is saved.
     // In a production app, you might add retry logic or monitoring here.
+  }
+}
+
+/**
+ * Sends a notification email to the admin for a new supporter.
+ */
+async function sendAdminNotificationEmail(apiKey: string, supporter: {name: string, email: string, company: string, role: string}) {
+  const { name, email, company, role } = supporter;
+
+  const emailHtml = `
+    <div style="font-family: sans-serif; line-height: 1.6;">
+      <h3>New Supporter for displaylocation.org!</h3>
+      <p>A new user has just signed the petition. Their submission has been saved to the database and a verification email has been sent to them.</p>
+      <ul>
+        <li><strong>Name:</strong> ${name}</li>
+        <li><strong>Email:</strong> ${email}</li>
+        <li><strong>Company:</strong> ${company}</li>
+        <li><strong>Role:</strong> ${role}</li>
+      </ul>
+    </div>
+  `;
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: 'hello@displaylocation.org',
+      to: ['vasco@displaylocation.org'],
+      subject: `New supporter: ${email}`,
+      html: emailHtml,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json();
+    console.error('Failed to send admin notification email:', errorBody);
+    // This is a non-critical email, so we just log the error and move on.
   }
 }

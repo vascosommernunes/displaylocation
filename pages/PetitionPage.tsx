@@ -111,7 +111,9 @@ const PetitionPage: React.FC = () => {
               />
             </div>
             <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-200">Role</label>
+              <label htmlFor="role" className="block text-sm font-medium text-gray-200">
+                Role <span className="text-gray-400 font-normal">(Consumer, business owner, director of cultural institution, etc.)</span>
+              </label>
               <input 
                 type="text" 
                 name="role" 

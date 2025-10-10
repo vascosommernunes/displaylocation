@@ -6,7 +6,7 @@ const HomePage: React.FC = () => {
     <div className="max-w-4xl mx-auto text-center">
       <div className="bg-brand p-8 sm:p-12 rounded-lg shadow-lg">
         <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
-          A new schema.org property for showrooms, galleries, and display locations.
+          A schema.org property for showrooms, galleries, and display locations.
         </h1>
         <p className="mt-6 text-lg text-gray-200 max-w-2xl mx-auto">
           For businesses with showrooms and museums with galleries, current schema.org options are inadequate. We propose <code className="bg-brand-dark text-gray-100 px-2 py-1 rounded-md text-base font-mono">displaylocation</code> to clearly articulate where an item can be experienced.
@@ -34,6 +34,13 @@ const HomePage: React.FC = () => {
         </blockquote>
         <p className="mt-4 text-gray-600 max-w-3xl mx-auto">
           In today's digital-first world, this is the final step in many customer journeys. They've researched online; now they want to experience your products or art in person. Our proposal helps you provide a clear, immediate answer right where they're looking: on the search results page.
+        </p>
+      </div>
+
+      <div className="mt-16">
+        <h2 className="text-3xl font-bold text-gray-900">What is schema?</h2>
+        <p className="mt-4 text-gray-600 max-w-3xl mx-auto">
+          Schema was introduced by Google, Microsoft, Yahoo and Yandex in order for search engines to understand webpages better. By adding small schemas to your website code, a search engine and AI can easier understand that a page is an article or a product or event page. Website owners can already tell search engines that a product is <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm">instock</code> or <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm">containedInPlace</code> but this does not mean that an item can be experienced. We propose to expand schema by a small extension, so that search engines can understand that an item can actually be experienced at a certain place.
         </p>
       </div>
 

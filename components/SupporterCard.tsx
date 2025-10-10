@@ -8,9 +8,14 @@ interface SupporterCardProps {
 const SupporterCard: React.FC<SupporterCardProps> = ({ supporter }) => {
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300">
-      <h3 className="text-lg font-semibold text-gray-900">{supporter.company}</h3>
-      <p className="text-gray-700 mt-2">{supporter.name}</p>
-      <p className="text-sm text-gray-500">{supporter.role}</p>
+      {/* New Order: Person's Name */}
+      <h3 className="text-lg font-semibold text-gray-900">{supporter.name}</h3>
+
+      {/* New Order: Role (with some top margin for spacing) */}
+      <p className="text-sm text-gray-500 mt-1">{supporter.role}</p>
+
+      {/* New Order: Organization Name (with some top margin for spacing) */}
+      <p className="text-gray-700 mt-2">{supporter.company}</p>
     </div>
   );
 };

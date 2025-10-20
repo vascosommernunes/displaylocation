@@ -22,7 +22,7 @@ interface PagesFunction<Env = unknown> {
 export interface Env {
   DB: D1Database;
   RESEND_API_KEY: string;
-  TURNSTILE_SECRET: string; // <-- ADD THIS: Cloudflare Turnstile secret key
+  TURNSTILE_SECRET: string; // <-- Cloudflare Turnstile secret key
   // This variable is auto-injected by Pages Functions and used to serve static assets
   ASSETS: { fetch: typeof fetch };
 }
@@ -107,7 +107,7 @@ async function handleAddSupporter(
       );
     }
 
-    // Optional: enforce hostname matches the current host (helps prevent token reuse across hosts)
+    // Optional: enforce hostname matches the current host
     const reqHost = new URL(request.url).hostname;
     if (verify.hostname && verify.hostname !== reqHost) {
       return json(
@@ -367,7 +367,7 @@ async function sendVerificationEmail(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'hello@displaylocation.org',
+      from: 'onboarding@resend.dev', // TEMP for sanity test
       to: [toEmail],
       subject: 'Confirm Your Support for displaylocation.org',
       html: emailHtml,
@@ -406,7 +406,7 @@ async function sendAdminNotificationEmail(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'hello@displaylocation.org',
+      from: 'onboarding@resend.dev', // TEMP for sanity test
       to: ['vasco@displaylocation.org'],
       subject: `New supporter: ${email}`,
       html: emailHtml,

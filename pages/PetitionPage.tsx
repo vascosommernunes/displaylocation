@@ -27,6 +27,7 @@ const PetitionPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!formData.name || !formData.email || !formData.company || !formData.role) {
       setError('All fields are required.');
       return;
@@ -36,9 +37,9 @@ const PetitionPage: React.FC = () => {
       return;
     }
 
-    // Grab Turnstile response token
+    // Grab Turnstile response token (inserted as a hidden input by the widget)
     const tokenInput = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]');
-    const cfTurnstileResponse = tokenInput?.value;
+    const cfTurnstileResponse = tokenInput?.value?.trim();
     if (!cfTurnstileResponse) {
       setError('Please verify you are human before submitting.');
       return;
@@ -48,20 +49,29 @@ const PetitionPage: React.FC = () => {
     setError('');
 
     try {
-      const response = await fetch(`${window.location.origin}/api/supporters`, {
+      const response = await fetch('/api/supporters', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, subscribe, cfTurnstileResponse }),
+        // IMPORTANT: The API expects the exact key "cf-turnstile-response"
+        body: JSON.stringify({
+          ...formData,
+          subscribe,
+          'cf-turnstile-response': cfTurnstileResponse,
+        }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || 'Something went wrong. Please try again.');
       }
 
       setSubmitted(true);
+      // Optional: reset the widget so the token can’t be reused
+      try {
+        (window as any)?.turnstile?.reset?.();
+      } catch {}
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      setError(err?.message || 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
@@ -85,7 +95,8 @@ const PetitionPage: React.FC = () => {
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          // action/method set for clarity; submit handled via JS fetch above
+          <form action="/api/supporters" method="post" onSubmit={handleSubmit} className="mt-8 space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-200">
                 Name
@@ -168,7 +179,7 @@ const PetitionPage: React.FC = () => {
               </div>
             </div>
 
-            {/* 🔒 Turnstile CAPTCHA widget */}
+            {/* 🔒 Turnstile CAPTCHA widget (must be inside the form) */}
             <div
               className="cf-turnstile"
               data-sitekey="0x4AAAAAAB7nD-ArS5nkd4Ol"

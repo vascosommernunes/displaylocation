@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 // This interface is for form state, not the global Supporter type
 interface FormData {
@@ -7,6 +7,19 @@ interface FormData {
   company: string;
   role: string;
 }
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (el: Element | string, opts: Record<string, any>) => string;
+      reset?: (wid?: any) => void;
+      remove?: (wid?: any) => void;
+      getResponse?: (el?: Element | string) => string | null;
+    };
+  }
+}
+
+const SITE_KEY = '0x4AAAAAAB7nD-ArS5nkd4Ol';
 
 const PetitionPage: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
@@ -19,6 +32,55 @@ const PetitionPage: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const widgetContainerRef = useRef<HTMLDivElement | null>(null);
+  const widgetIdRef = useRef<string | null>(null);
+
+  // Ensure Turnstile script is present and render explicitly on mount
+  useEffect(() => {
+    const ensureScript = () =>
+      new Promise<void>((resolve) => {
+        if (window.turnstile && typeof window.turnstile.render === 'function') {
+          resolve();
+          return;
+        }
+        const existing = document.querySelector<HTMLScriptElement>('script[data-turnstile="1"]');
+        if (existing) {
+          existing.addEventListener('load', () => resolve(), { once: true });
+          return;
+        }
+        const s = document.createElement('script');
+        s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+        s.async = true;
+        s.defer = true;
+        s.setAttribute('data-turnstile', '1');
+        s.addEventListener('load', () => resolve(), { once: true });
+        document.head.appendChild(s);
+      });
+
+    let isMounted = true;
+
+    (async () => {
+      await ensureScript();
+      if (!isMounted) return;
+
+      // Render widget explicitly into our container
+      if (widgetContainerRef.current && window.turnstile) {
+        // If something was rendered before, remove it
+        try { widgetIdRef.current && window.turnstile.remove?.(widgetIdRef.current); } catch {}
+        widgetIdRef.current = window.turnstile.render(widgetContainerRef.current, {
+          sitekey: SITE_KEY,
+          theme: 'auto',
+        });
+      }
+    })();
+
+    // Cleanup on unmount
+    return () => {
+      isMounted = false;
+      try { widgetIdRef.current && window.turnstile?.remove?.(widgetIdRef.current); } catch {}
+    };
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -37,9 +99,11 @@ const PetitionPage: React.FC = () => {
       return;
     }
 
-    // Grab Turnstile response token (inserted as a hidden input by the widget)
+    // Read Turnstile token (from API or hidden input)
+    const tokenFromApi = window.turnstile?.getResponse?.(widgetContainerRef.current as Element);
     const tokenInput = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]');
-    const cfTurnstileResponse = tokenInput?.value?.trim();
+    const cfTurnstileResponse = (tokenFromApi || tokenInput?.value || '').trim();
+
     if (!cfTurnstileResponse) {
       setError('Please verify you are human before submitting.');
       return;
@@ -49,10 +113,10 @@ const PetitionPage: React.FC = () => {
     setError('');
 
     try {
-      const response = await fetch('/api/supporters', {
+      const res = await fetch('/api/supporters', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // IMPORTANT: The API expects the exact key "cf-turnstile-response"
+        // Backend expects the exact key "cf-turnstile-response"
         body: JSON.stringify({
           ...formData,
           subscribe,
@@ -60,16 +124,14 @@ const PetitionPage: React.FC = () => {
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Something went wrong. Please try again.');
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Something went wrong. Please try again.');
       }
 
       setSubmitted(true);
-      // Optional: reset the widget so the token can’t be reused
-      try {
-        (window as any)?.turnstile?.reset?.();
-      } catch {}
+      // Reset widget to avoid token reuse (best-effort)
+      try { window.turnstile?.reset?.(widgetIdRef.current as any); } catch {}
     } catch (err: any) {
       setError(err?.message || 'An unexpected error occurred.');
     } finally {
@@ -95,7 +157,7 @@ const PetitionPage: React.FC = () => {
             </p>
           </div>
         ) : (
-          // action/method set for clarity; submit handled via JS fetch above
+          // action/method for clarity; submit handled via JS
           <form action="/api/supporters" method="post" onSubmit={handleSubmit} className="mt-8 space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-200">
@@ -112,6 +174,7 @@ const PetitionPage: React.FC = () => {
                 required
               />
             </div>
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-200">
                 Email Address
@@ -127,6 +190,7 @@ const PetitionPage: React.FC = () => {
                 required
               />
             </div>
+
             <div>
               <label htmlFor="company" className="block text-sm font-medium text-gray-200">
                 Company / Organization
@@ -142,6 +206,7 @@ const PetitionPage: React.FC = () => {
                 required
               />
             </div>
+
             <div>
               <label htmlFor="role" className="block text-sm font-medium text-gray-200">
                 Role{' '}
@@ -179,12 +244,14 @@ const PetitionPage: React.FC = () => {
               </div>
             </div>
 
-            {/* 🔒 Turnstile CAPTCHA widget (must be inside the form) */}
+            {/* Turnstile container (explicit render) */}
             <div
+              ref={widgetContainerRef}
               className="cf-turnstile"
-              data-sitekey="0x4AAAAAAB7nD-ArS5nkd4Ol"
+              style={{ minHeight: 65 }}
+              data-sitekey={SITE_KEY}
               data-theme="auto"
-            ></div>
+            />
 
             {error && <p className="text-sm text-red-400">{error}</p>}
             <div>

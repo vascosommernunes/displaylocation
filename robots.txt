@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Hash-based routes (e.g., https://displaylocation.org/#/proposal) are not separate URLs for crawling.
+# Search engines will discover content at the root URL after rendering.
+# If you migrate to clean paths (e.g., /proposal), update sitemap accordingly.
+
+Sitemap: https://displaylocation.org/sitemap.xml

@@ -1,7 +1,6 @@
 // functions/api/[[route]].ts
 
-// This is a workaround for TypeScript environments that don't have Cloudflare's
-// specific types available globally. We define them here to ensure the code type-checks.
+// --- Minimal Cloudflare type shims for TS ---
 interface D1Database {
   prepare(query: string): any;
 }
@@ -22,8 +21,7 @@ interface PagesFunction<Env = unknown> {
 export interface Env {
   DB: D1Database;
   RESEND_API_KEY: string;
-  TURNSTILE_SECRET: string; // <-- Cloudflare Turnstile secret key
-  // This variable is auto-injected by Pages Functions and used to serve static assets
+  TURNSTILE_SECRET: string;
   ASSETS: { fetch: typeof fetch };
 }
 
@@ -35,20 +33,20 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const url = new URL(request.url);
 
   // Simple router for /api/* paths
-  if (url.pathname.startsWith('/api/')) {
-    if (url.pathname === '/api/supporters' && request.method === 'POST') {
+  if (url.pathname.startsWith("/api/")) {
+    if (url.pathname === "/api/supporters" && request.method === "POST") {
       return await handleAddSupporter(request, env, waitUntil);
     }
-    if (url.pathname === '/api/supporters' && request.method === 'GET') {
+    if (url.pathname === "/api/supporters" && request.method === "GET") {
       return await handleGetSupporters(env);
     }
-    if (url.pathname === '/api/verify' && request.method === 'GET') {
+    if (url.pathname === "/api/verify" && request.method === "GET") {
       return await handleVerifySupporter(request, env);
     }
-    if (url.pathname === '/api/unsubscribe' && request.method === 'GET') {
+    if (url.pathname === "/api/unsubscribe" && request.method === "GET") {
       return await handleUnsubscribe(request, env);
     }
-    return new Response('Not found', { status: 404 });
+    return new Response("Not found", { status: 404 });
   }
 
   // Serve static assets for everything else
@@ -67,28 +65,28 @@ async function handleAddSupporter(
     // Accept JSON or FormData
     const payload = await parseSupporterPayload(request);
 
-    const name = (payload.name || '').trim();
-    const email = (payload.email || '').trim();
-    const company = (payload.company || '').trim();
-    const role = (payload.role || '').trim();
+    const name = (payload.name || "").trim();
+    const email = (payload.email || "").trim();
+    const company = (payload.company || "").trim();
+    const role = (payload.role || "").trim();
     const subscribe = !!payload.subscribe;
     const turnstileToken =
-      payload['cf-turnstile-response'] ||
-      payload['turnstileToken'] ||
-      payload['turnstile_token'] ||
-      '';
+      payload["cf-turnstile-response"] ||
+      payload["turnstileToken"] ||
+      payload["turnstile_token"] ||
+      "";
 
     if (!name || !email || !company || !role) {
-      return json({ error: 'All fields are required' }, 400);
+      return json({ error: "All fields are required" }, 400);
     }
     if (!turnstileToken) {
-      return json({ error: 'Missing Turnstile token' }, 400);
+      return json({ error: "Missing Turnstile token" }, 400);
     }
 
-    // Server-side Turnstile verification (critical)
+    // Server-side Turnstile verification
     const remoteIp =
-      request.headers.get('cf-connecting-ip') ||
-      request.headers.get('x-forwarded-for') ||
+      request.headers.get("cf-connecting-ip") ||
+      request.headers.get("x-forwarded-for") ||
       undefined;
 
     const verify = await verifyTurnstile({
@@ -100,26 +98,26 @@ async function handleAddSupporter(
     if (!verify.success) {
       return json(
         {
-          error: 'Turnstile verification failed',
-          details: verify['error-codes'] || [],
+          error: "Turnstile verification failed",
+          details: verify["error-codes"] || [],
         },
         400
       );
     }
 
-    // Optional: enforce hostname matches the current host
+    // Optional: hostname check
     const reqHost = new URL(request.url).hostname;
     if (verify.hostname && verify.hostname !== reqHost) {
       return json(
         {
-          error: 'Turnstile hostname mismatch',
+          error: "Turnstile hostname mismatch",
           details: { expected: reqHost, got: verify.hostname },
         },
         400
       );
     }
 
-    // Passed verification. Proceed to persist and email.
+    // Persist and email
     const token = crypto.randomUUID();
 
     await env.DB.prepare(
@@ -154,14 +152,17 @@ async function handleAddSupporter(
 
     return json({ success: true }, 200);
   } catch (e: any) {
-    console.error('Error adding supporter:', e?.message || e);
-    if (e?.message?.includes('UNIQUE constraint failed')) {
+    console.error("Error adding supporter:", e?.message || e);
+    if (e?.message?.includes("UNIQUE constraint failed")) {
       return json(
-        { error: 'This email address has already been used to sign the petition.' },
+        {
+          error:
+            "This email address has already been used to sign the petition.",
+        },
         409
       );
     }
-    return json({ error: 'Internal Server Error' }, 500);
+    return json({ error: "Internal Server Error" }, 500);
   }
 }
 
@@ -170,9 +171,9 @@ async function handleAddSupporter(
 // -----------------------------
 async function handleVerifySupporter(request: Request, env: Env) {
   const url = new URL(request.url);
-  const token = url.searchParams.get('token');
+  const token = url.searchParams.get("token");
 
-  if (!token) return new Response('Missing verification token.', { status: 400 });
+  if (!token) return new Response("Missing verification token.", { status: 400 });
 
   const result = await env.DB.prepare(
     `UPDATE supporters SET verified = 1 WHERE token = ? AND verified = 0`
@@ -195,17 +196,20 @@ async function handleVerifySupporter(request: Request, env: Env) {
 // -----------------------------
 async function handleUnsubscribe(request: Request, env: Env) {
   const url = new URL(request.url);
-  const token = url.searchParams.get('token');
+  const token = url.searchParams.get("token");
 
-  if (!token) return new Response('Missing token.', { status: 400 });
+  if (!token) return new Response("Missing token.", { status: 400 });
 
   await env.DB.prepare(`UPDATE supporters SET subscribed = 0 WHERE token = ?`)
     .bind(token)
     .run();
 
-  return new Response('You have been successfully unsubscribed from future updates.', {
-    headers: { 'Content-Type': 'text/html' },
-  });
+  return new Response(
+    "You have been successfully unsubscribed from future updates.",
+    {
+      headers: { "Content-Type": "text/html" },
+    }
+  );
 }
 
 // -----------------------------
@@ -222,8 +226,8 @@ async function handleGetSupporters(env: Env) {
 
     return json(results, 200);
   } catch (e: any) {
-    console.error('Error fetching supporters:', e);
-    return json({ error: 'Internal Server Error' }, 500);
+    console.error("Error fetching supporters:", e);
+    return json({ error: "Internal Server Error" }, 500);
   }
 }
 
@@ -234,7 +238,7 @@ type TurnstileVerifyResponse = {
   success: boolean;
   challenge_ts?: string;
   hostname?: string;
-  'error-codes'?: string[];
+  "error-codes"?: string[];
   action?: string;
   cdata?: string;
 };
@@ -247,18 +251,17 @@ async function verifyTurnstile(args: {
   const { secret, response, remoteip } = args;
 
   const form = new FormData();
-  form.set('secret', secret);
-  form.set('response', response);
-  if (remoteip) form.set('remoteip', remoteip);
+  form.set("secret", secret);
+  form.set("response", response);
+  if (remoteip) form.set("remoteip", remoteip);
 
   const res = await fetch(
-    'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-    { method: 'POST', body: form }
+    "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+    { method: "POST", body: form }
   );
 
   if (!res.ok) {
-    // If Cloudflare returns a non-200, treat as failure
-    return { success: false, 'error-codes': ['turnstile_http_error_' + res.status] };
+    return { success: false, "error-codes": ["turnstile_http_" + res.status] };
   }
 
   const data = (await res.json()) as TurnstileVerifyResponse;
@@ -271,25 +274,24 @@ async function verifyTurnstile(args: {
 async function parseSupporterPayload(
   request: Request
 ): Promise<Record<string, any>> {
-  const ct = (request.headers.get('content-type') || '').toLowerCase();
+  const ct = (request.headers.get("content-type") || "").toLowerCase();
 
   // JSON
-  if (ct.includes('application/json')) {
+  if (ct.includes("application/json")) {
     const body = (await request.json()) as Record<string, any>;
     return body || {};
   }
 
-  // FormData (application/x-www-form-urlencoded or multipart/form-data)
+  // FormData (urlencoded or multipart)
   if (
-    ct.includes('application/x-www-form-urlencoded') ||
-    ct.includes('multipart/form-data')
+    ct.includes("application/x-www-form-urlencoded") ||
+    ct.includes("multipart/form-data")
   ) {
     const form = await request.formData();
     const entries = Object.fromEntries(form.entries());
-    // Normalize checkbox-like values
-    if (typeof entries.subscribe !== 'undefined') {
+    if (typeof entries.subscribe !== "undefined") {
       const v = String(entries.subscribe).toLowerCase();
-      entries.subscribe = v === 'true' || v === '1' || v === 'on' || v === 'yes';
+      entries.subscribe = v === "true" || v === "1" || v === "on" || v === "yes";
     }
     return entries;
   }
@@ -325,7 +327,7 @@ async function sendVerificationEmail(
         .header { background-color: #345d62; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
         .header h2 { margin: 0; }
         .content { padding: 30px 20px; }
-        .footer { font-size: 0.8em; color: #777; text-align: center; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;}
+        .footer { font-size: 0.8em; color: #777; text-align: center; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px; }
       </style>
     </head>
     <body>
@@ -360,23 +362,23 @@ async function sendVerificationEmail(
     </html>
   `;
 
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: 'onboarding@resend.dev', // TEMP for sanity test
+      from: "hello@displaylocation.org", // ✅ use verified domain
       to: [toEmail],
-      subject: 'Confirm Your Support for displaylocation.org',
+      subject: "Confirm Your Support for displaylocation.org",
       html: emailHtml,
     }),
   });
 
   if (!response.ok) {
     const errorBody = await safeJson(response);
-    console.error('Failed to send email:', errorBody);
+    console.error("Failed to send email:", errorBody);
   }
 }
 
@@ -399,15 +401,15 @@ async function sendAdminNotificationEmail(
     </div>
   `;
 
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: 'onboarding@resend.dev', // TEMP for sanity test
-      to: ['vasco@displaylocation.org'],
+      from: "hello@displaylocation.org", // ✅ use verified domain
+      to: ["vasco@displaylocation.org"],
       subject: `New supporter: ${email}`,
       html: emailHtml,
     }),
@@ -415,7 +417,7 @@ async function sendAdminNotificationEmail(
 
   if (!response.ok) {
     const errorBody = await safeJson(response);
-    console.error('Failed to send admin notification email:', errorBody);
+    console.error("Failed to send admin notification email:", errorBody);
   }
 }
 
@@ -425,23 +427,23 @@ async function sendAdminNotificationEmail(
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { "Content-Type": "application/json" },
   });
 }
 
 function escapeHtml(input: string) {
   return input
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 }
 
 async function safeJson(res: Response) {
   try {
     return await res.json();
   } catch {
-    return { status: res.status, text: await res.text().catch(() => '') };
+    return { status: res.status, text: await res.text().catch(() => "") };
   }
 }

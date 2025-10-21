@@ -35,7 +35,7 @@ const ProposalPage: React.FC = () => {
         <p>
           The current schema.org vocabulary lacks a specific property to designate a location as a showroom or display-only facility. This ambiguity affects a wide range of organizations, from retail businesses (furniture stores, car dealerships) to cultural institutions (museums, art galleries) that maintain special locations to display items. These items may not be for sale, may be part of a collection housed elsewhere, or may be available only by custom order.
         </p>
-
+<br /><br />
         <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg not-prose">
           <p className="text-sm text-blue-800">
             This proposal has been formally submitted for community discussion. You can follow and participate in the official conversation on the schema.org GitHub repository:
@@ -48,7 +48,7 @@ const ProposalPage: React.FC = () => {
           >
             https://github.com/schemaorg/schemaorg/issues/4513
           </a>
-
+<br /><br />
 <p className="text-sm text-blue-800">
             Our initial blog post can be found here:
           </p>

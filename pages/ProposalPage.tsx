@@ -48,6 +48,18 @@ const ProposalPage: React.FC = () => {
           >
             https://github.com/schemaorg/schemaorg/issues/4513
           </a>
+
+<p className="text-sm text-blue-800">
+            Our initial blog post can be found here:
+          </p>
+          <a
+            href="https://blog.showroom.fm/index.php/2025/09/26/113/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-brand hover:underline break-all"
+          >
+            https://blog.showroom.fm/index.php/2025/09/26/113/
+          </a>
         </div>
 
         <h2 className="text-2xl font-semibold text-gray-800 mt-8">Why Existing Tags Fall Short</h2>

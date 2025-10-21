@@ -47,8 +47,6 @@ const ProposalPage: React.FC = () => {
             className="font-medium text-brand hover:underline break-all"
           >
             https://github.com/schemaorg/schemaorg/issues/4513
-          <br>
-          Our intial blog post on showroom.fM: https://blog.showroom.fm/index.php/2025/09/26/113/</br>
           </a>
         </div>
 

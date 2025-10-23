@@ -76,7 +76,7 @@ const ProposalPage: React.FC = () => {
         <h2 className="text-2xl font-semibold text-gray-800 mt-8">Proposed Solution</h2>
         <p>
           We propose the creation of a new property, <code className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-base font-mono">displaylocation</code>. This property would be applicable to types such as <code className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-base font-mono">Store</code>, <code className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-base font-mono">LocalBusiness</code>, <code className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-base font-mono">Museum</code>, and their subtypes.
-        </p>
+        <br /><br /></p>
         <ul>
           <li><strong>Property Name:</strong> <code className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-base font-mono">displaylocation</code></li>
           <li><strong>Expected Type:</strong> <code className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-base font-mono">Place</code></li>
@@ -90,7 +90,7 @@ const ProposalPage: React.FC = () => {
         <h2 className="text-2xl font-semibold text-gray-800 mt-8">Benefits</h2>
         <p>
           Implementing this property will provide significant benefits to businesses, institutions, and the public:
-        </p>
+        <br /><br /></p>
         <ul>
             <li><strong>Answering "Where can I try this?":</strong> Directly enables search engines to connect customers who are ready to see a product in person with the correct physical location, bridging the digital-to-physical gap.</li>
             <li><strong>Clarity for Customers & Visitors:</strong> Prevent confusion by clearly marking a location as a showroom or gallery, ensuring visitors arrive with the correct expectations (e.g., not for immediate purchase or pickup).</li>

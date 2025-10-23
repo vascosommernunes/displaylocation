@@ -68,7 +68,7 @@ async function handleAddSupporter(
     const name = (payload.name || "").trim();
     const email = (payload.email || "").trim();
     const companyRaw = (payload.company || "").trim();
-    const company: string | null = companyRaw === "" ? null : companyRaw; // <-- optional now
+    const company: string = companyRaw === "" ? "" : companyRaw; // <-- store empty string (NOT NULL-safe)
     const role = (payload.role || "").trim();
     const subscribe = !!payload.subscribe;
     const turnstileToken =
@@ -99,10 +99,7 @@ async function handleAddSupporter(
 
     if (!verify.success) {
       return json(
-        {
-          error: "Turnstile verification failed",
-          details: verify["error-codes"] || [],
-        },
+        { error: "Turnstile verification failed", details: verify["error-codes"] || [] },
         400
       );
     }
@@ -111,10 +108,7 @@ async function handleAddSupporter(
     const reqHost = new URL(request.url).hostname;
     if (verify.hostname && verify.hostname !== reqHost) {
       return json(
-        {
-          error: "Turnstile hostname mismatch",
-          details: { expected: reqHost, got: verify.hostname },
-        },
+        { error: "Turnstile hostname mismatch", details: { expected: reqHost, got: verify.hostname } },
         400
       );
     }
@@ -154,16 +148,23 @@ async function handleAddSupporter(
 
     return json({ success: true }, 200);
   } catch (e: any) {
-    console.error("Error adding supporter:", e?.message || e);
-    if (e?.message?.includes("UNIQUE constraint failed")) {
+    const msg = String(e?.message || e || "");
+    console.error("Error adding supporter:", msg);
+
+    // Friendlier DB errors
+    if (msg.includes("UNIQUE constraint failed")) {
       return json(
-        {
-          error:
-            "This email address has already been used to sign the petition.",
-        },
+        { error: "This email address has already been used to sign the petition." },
         409
       );
     }
+    if (msg.includes("NOT NULL constraint failed")) {
+      return json(
+        { error: "A required database field was missing. Please try again." },
+        400
+      );
+    }
+
     return json({ error: "Internal Server Error" }, 500);
   }
 }
@@ -185,12 +186,7 @@ async function handleVerifySupporter(request: Request, env: Env) {
 
   // Redirect to HashRouter route
   const successPageUrl = `${url.origin}/#/supporters`;
-
-  if (result.success && result.meta.changes > 0) {
-    return Response.redirect(successPageUrl, 302);
-  } else {
-    return Response.redirect(successPageUrl, 302);
-  }
+  return Response.redirect(successPageUrl, 302);
 }
 
 // -----------------------------
@@ -206,12 +202,9 @@ async function handleUnsubscribe(request: Request, env: Env) {
     .bind(token)
     .run();
 
-  return new Response(
-    "You have been successfully unsubscribed from future updates.",
-    {
-      headers: { "Content-Type": "text/html" },
-    }
-  );
+  return new Response("You have been successfully unsubscribed from future updates.", {
+    headers: { "Content-Type": "text/html" },
+  });
 }
 
 // -----------------------------
@@ -257,10 +250,10 @@ async function verifyTurnstile(args: {
   form.set("response", response);
   if (remoteip) form.set("remoteip", remoteip);
 
-  const res = await fetch(
-    "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-    { method: "POST", body: form }
-  );
+  const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+    method: "POST",
+    body: form,
+  });
 
   if (!res.ok) {
     return { success: false, "error-codes": ["turnstile_http_" + res.status] };
@@ -273,9 +266,7 @@ async function verifyTurnstile(args: {
 // -----------------------------
 // Payload parsing helper
 // -----------------------------
-async function parseSupporterPayload(
-  request: Request
-): Promise<Record<string, any>> {
+async function parseSupporterPayload(request: Request): Promise<Record<string, any>> {
   const ct = (request.headers.get("content-type") || "").toLowerCase();
 
   // JSON
@@ -285,10 +276,7 @@ async function parseSupporterPayload(
   }
 
   // FormData (urlencoded or multipart)
-  if (
-    ct.includes("application/x-www-form-urlencoded") ||
-    ct.includes("multipart/form-data")
-  ) {
+  if (ct.includes("application/x-www-form-urlencoded") || ct.includes("multipart/form-data")) {
     const form = await request.formData();
     const entries = Object.fromEntries(form.entries());
     if (typeof entries.subscribe !== "undefined") {
@@ -371,7 +359,7 @@ async function sendVerificationEmail(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "hello@displaylocation.org", // ✅ use verified domain
+      from: "hello@displaylocation.org",
       to: [toEmail],
       subject: "Confirm Your Support for displaylocation.org",
       html: emailHtml,
@@ -386,7 +374,7 @@ async function sendVerificationEmail(
 
 async function sendAdminNotificationEmail(
   apiKey: string,
-  supporter: { name: string; email: string; company: string | null; role: string }
+  supporter: { name: string; email: string; company: string; role: string }
 ) {
   const { name, email, company, role } = supporter;
 
@@ -397,7 +385,7 @@ async function sendAdminNotificationEmail(
       <ul>
         <li><strong>Name:</strong> ${escapeHtml(name)}</li>
         <li><strong>Email:</strong> ${escapeHtml(email)}</li>
-        <li><strong>Company:</strong> ${displayOrDash(company)}</li>
+        <li><strong>Company:</strong> ${company ? escapeHtml(company) : "—"}</li>
         <li><strong>Role:</strong> ${escapeHtml(role)}</li>
       </ul>
     </div>
@@ -410,7 +398,7 @@ async function sendAdminNotificationEmail(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "hello@displaylocation.org", // ✅ use verified domain
+      from: "hello@displaylocation.org",
       to: ["vasco@displaylocation.org"],
       subject: `New supporter: ${email}`,
       html: emailHtml,
@@ -440,10 +428,6 @@ function escapeHtml(input: string) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
-}
-
-function displayOrDash(input?: string | null) {
-  return input ? escapeHtml(input) : "—";
 }
 
 async function safeJson(res: Response) {

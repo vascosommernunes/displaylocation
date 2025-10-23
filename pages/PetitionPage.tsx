@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 interface FormData {
   name: string;
   email: string;
-  company: string;
+  company: string; // optional in UI, allowed to be ""
   role: string;
 }
 
@@ -90,8 +90,9 @@ const PetitionPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.email || !formData.company || !formData.role) {
-      setError('All fields are required.');
+    // Company is OPTIONAL now
+    if (!formData.name || !formData.email || !formData.role) {
+      setError('Name, Email, and Role are required.');
       return;
     }
     if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -193,7 +194,7 @@ const PetitionPage: React.FC = () => {
 
             <div>
               <label htmlFor="company" className="block text-sm font-medium text-gray-200">
-                Company / Organization
+                Company / Organization <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <input
                 type="text"
@@ -203,7 +204,7 @@ const PetitionPage: React.FC = () => {
                 onChange={handleChange}
                 className="mt-1 block w-full px-3 py-2 bg-brand-dark text-white border border-gray-500 rounded-md
                            placeholder-gray-400 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm"
-                required
+                // no "required"
               />
             </div>
 
@@ -211,7 +212,7 @@ const PetitionPage: React.FC = () => {
               <label htmlFor="role" className="block text-sm font-medium text-gray-200">
                 Role{' '}
                 <span className="text-gray-400 font-normal">
-                  (Consumer, business owner, director of cultural institution, etc.)
+                  (Person, business owner, director of cultural institution, etc.)
                 </span>
               </label>
               <input

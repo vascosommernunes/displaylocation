@@ -67,7 +67,8 @@ async function handleAddSupporter(
 
     const name = (payload.name || "").trim();
     const email = (payload.email || "").trim();
-    const company = (payload.company || "").trim();
+    const companyRaw = (payload.company || "").trim();
+    const company: string | null = companyRaw === "" ? null : companyRaw; // <-- optional now
     const role = (payload.role || "").trim();
     const subscribe = !!payload.subscribe;
     const turnstileToken =
@@ -76,8 +77,9 @@ async function handleAddSupporter(
       payload["turnstile_token"] ||
       "";
 
-    if (!name || !email || !company || !role) {
-      return json({ error: "All fields are required" }, 400);
+    // Company is OPTIONAL
+    if (!name || !email || !role) {
+      return json({ error: "Name, Email, and Role are required." }, 400);
     }
     if (!turnstileToken) {
       return json({ error: "Missing Turnstile token" }, 400);
@@ -384,7 +386,7 @@ async function sendVerificationEmail(
 
 async function sendAdminNotificationEmail(
   apiKey: string,
-  supporter: { name: string; email: string; company: string; role: string }
+  supporter: { name: string; email: string; company: string | null; role: string }
 ) {
   const { name, email, company, role } = supporter;
 
@@ -395,7 +397,7 @@ async function sendAdminNotificationEmail(
       <ul>
         <li><strong>Name:</strong> ${escapeHtml(name)}</li>
         <li><strong>Email:</strong> ${escapeHtml(email)}</li>
-        <li><strong>Company:</strong> ${escapeHtml(company)}</li>
+        <li><strong>Company:</strong> ${displayOrDash(company)}</li>
         <li><strong>Role:</strong> ${escapeHtml(role)}</li>
       </ul>
     </div>
@@ -438,6 +440,10 @@ function escapeHtml(input: string) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function displayOrDash(input?: string | null) {
+  return input ? escapeHtml(input) : "—";
 }
 
 async function safeJson(res: Response) {

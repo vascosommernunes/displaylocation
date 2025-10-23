@@ -64,7 +64,7 @@ const ProposalPage: React.FC = () => {
         <h2 className="text-2xl font-semibold text-gray-800 mt-8">Why Existing Tags Fall Short</h2>
         <p>
           Current Schema.org tools (e.g., <code className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-base font-mono">InStock</code> or <code className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-base font-mono">InStoreOnly</code> under <code className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-base font-mono">Offer</code>) are great for signaling basic availability, but they fall short on the experiential side. Customers aren't just buying; they're seeking sensory engagement—feeling the fabric, testing the ergonomics, or admiring an artwork up close. Without explicit markup for display status or location, search engines can't reliably surface that info, forcing users to call stores or guess based on blurry photos.
-        </p>
+        <br /><br /></p>
         <p>
           A dedicated property would:
         </p>

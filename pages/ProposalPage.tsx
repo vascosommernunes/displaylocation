@@ -33,7 +33,7 @@ const ProposalPage: React.FC = () => {
       <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">The "displaylocation" Proposal</h1>
       <div className="mt-6 prose prose-lg text-gray-600 max-w-none">
         <p>
-          The current schema.org vocabulary lacks a specific property to designate a location as a place where a certain object is on display and can be experienced by a person. This ambiguity affects a wide range of organizations, from retail businesses to cultural institutions that maintain special locations to display items. These items may not be for sale, may be part of a collection, or may be available only by custom order.
+          The current schema.org vocabulary lacks a specific property to designate a location as a place where a certain object is on display and can be experienced by a person. This affects a wide range of people who are trying to identify these places and organizations, from retail businesses to cultural institutions that maintain special locations to display items. These items may not be for sale, may be part of a collection, or may be available only by custom order.
         </p>
         <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg not-prose">
           <p className="text-sm text-blue-800">

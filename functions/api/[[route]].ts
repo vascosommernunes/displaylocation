@@ -216,7 +216,7 @@ async function handleGetSupporters(env: Env) {
       `SELECT name, company, role
        FROM supporters
        WHERE verified = 1
-       ORDER BY id DESC`
+       ORDER BY id ASC`
     ).all();
 
     return json(results, 200);

@@ -14,13 +14,13 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/imprint', label: 'Imprint' },
 ];
 
-// --- Shared: link class helper (matches your legacy styles) ---
+// Shared: link class helper (keeps legacy look)
 const navLinkClasses = ({ isActive }: { isActive: boolean }): string =>
   `text-sm font-medium transition-colors ${
     isActive ? 'text-brand font-semibold' : 'text-gray-600 hover:text-brand'
   }`;
 
-// --- Simple focus trap helpers (no new deps) ---
+// Simple focus trap helpers (no deps)
 function getFocusable(container: HTMLElement) {
   return Array.from(
     container.querySelectorAll<HTMLElement>(
@@ -125,11 +125,7 @@ export default function Header(): JSX.Element {
           <nav className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
               {NAV_ITEMS.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={navLinkClasses}
-                >
+                <NavLink key={item.to} to={item.to} className={navLinkClasses}>
                   {item.label}
                 </NavLink>
               ))}
@@ -159,18 +155,18 @@ export default function Header(): JSX.Element {
       {/* Mobile drawer */}
       {open && (
         <>
-          {/* Overlay */}
+          {/* Overlay — bumped z-index */}
           <div
-            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm"
             onClick={close}
             aria-hidden="true"
           />
-          {/* Panel */}
+          {/* Panel — bumped z-index */}
           <div
             id="mobile-menu"
             role="dialog"
             aria-modal="true"
-            className="fixed right-0 top-0 bottom-0 z-[60] w-[88vw] max-w-sm bg-white shadow-2xl p-6 flex flex-col"
+            className="fixed right-0 top-0 bottom-0 z-[110] w-[88vw] max-w-sm bg-white shadow-2xl p-6 flex flex-col"
             ref={panelRef}
             onKeyDown={onKeyDown}
           >

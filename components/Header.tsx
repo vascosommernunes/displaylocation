@@ -147,24 +147,26 @@ export default function Header(): JSX.Element {
         </div>
       </div>
 
-      {/* Mobile drawer via portal to <body> */}
+      {/* Mobile drawer via portal to <body> with max z-index */}
       {open &&
         createPortal(
           <>
             {/* Overlay */}
             <div
-              className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-sm"
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm"
               onClick={close}
               aria-hidden="true"
+              style={{ zIndex: 2147483646 }}
             />
             {/* Panel */}
             <div
               id="mobile-menu"
               role="dialog"
               aria-modal="true"
-              className="fixed right-0 top-0 bottom-0 z-[9999] w-[88vw] max-w-sm bg-white shadow-2xl p-6 flex flex-col"
+              className="fixed right-0 top-0 bottom-0 w-[88vw] max-w-sm bg-white shadow-2xl p-6 flex flex-col"
               ref={panelRef}
               onKeyDown={onKeyDown}
+              style={{ zIndex: 2147483647 }}
             >
               <div className="flex items-center justify-between mb-4">
                 <span className="text-lg font-semibold">Menu</span>

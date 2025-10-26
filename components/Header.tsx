@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { NavLink } from 'react-router-dom';
 
 const NAV_V2 = String(import.meta.env.VITE_NAV_V2 ?? '') === '1';
@@ -14,13 +15,13 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/imprint', label: 'Imprint' },
 ];
 
-// Shared: link class helper (keeps legacy look)
+// Keep legacy look for desktop links
 const navLinkClasses = ({ isActive }: { isActive: boolean }): string =>
   `text-sm font-medium transition-colors ${
     isActive ? 'text-brand font-semibold' : 'text-gray-600 hover:text-brand'
   }`;
 
-// Simple focus trap helpers (no deps)
+// Simple focusable finder (no deps)
 function getFocusable(container: HTMLElement) {
   return Array.from(
     container.querySelectorAll<HTMLElement>(
@@ -66,36 +67,31 @@ export default function Header(): JSX.Element {
   const panelRef = React.useRef<HTMLDivElement | null>(null);
   const prevFocusRef = React.useRef<Element | null>(null);
 
-  // Scroll lock + focus management
+  // Scroll lock + focus mgmt
   React.useEffect(() => {
     if (!open) return;
-
     prevFocusRef.current = document.activeElement;
-    const previousOverflow = document.documentElement.style.overflow;
+    const prevOverflow = document.documentElement.style.overflow;
     document.documentElement.style.overflow = 'hidden';
 
-    const panel = panelRef.current;
-    if (panel) {
-      const focusables = getFocusable(panel);
-      (focusables[0] ?? panel).focus();
+    const p = panelRef.current;
+    if (p) {
+      const f = getFocusable(p);
+      (f[0] ?? p).focus();
     }
-
     return () => {
-      document.documentElement.style.overflow = previousOverflow;
-      if (prevFocusRef.current instanceof HTMLElement) {
-        prevFocusRef.current.focus();
-      }
+      document.documentElement.style.overflow = prevOverflow;
+      if (prevFocusRef.current instanceof HTMLElement) prevFocusRef.current.focus();
     };
   }, [open]);
 
   // Trap focus inside panel
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== 'Tab' || !panelRef.current) return;
-    const focusables = getFocusable(panelRef.current);
-    if (focusables.length === 0) return;
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-
+    const f = getFocusable(panelRef.current);
+    if (!f.length) return;
+    const first = f[0];
+    const last = f[f.length - 1];
     if (e.shiftKey && document.activeElement === first) {
       last.focus();
       e.preventDefault();
@@ -109,7 +105,7 @@ export default function Header(): JSX.Element {
 
   return (
     <header
-      className="sticky top-0 inset-x-0 z-50 border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60"
+      className="sticky top-0 inset-x-0 z-[1000] border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 0rem)' }}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -143,7 +139,6 @@ export default function Header(): JSX.Element {
               onClick={() => setOpen(true)}
               className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-gray-300 text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
-              {/* Hamburger icon */}
               <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
@@ -152,62 +147,64 @@ export default function Header(): JSX.Element {
         </div>
       </div>
 
-      {/* Mobile drawer */}
-      {open && (
-        <>
-          {/* Overlay — bumped z-index */}
-          <div
-            className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm"
-            onClick={close}
-            aria-hidden="true"
-          />
-          {/* Panel — bumped z-index */}
-          <div
-            id="mobile-menu"
-            role="dialog"
-            aria-modal="true"
-            className="fixed right-0 top-0 bottom-0 z-[110] w-[88vw] max-w-sm bg-white shadow-2xl p-6 flex flex-col"
-            ref={panelRef}
-            onKeyDown={onKeyDown}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-lg font-semibold">Menu</span>
-              <button
-                type="button"
-                onClick={close}
-                aria-label="Close menu"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M6 6l12 12M18 6l-12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </button>
-            </div>
-
-            <nav className="flex flex-col gap-3 overflow-y-auto">
-              {NAV_ITEMS.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
+      {/* Mobile drawer via portal to <body> */}
+      {open &&
+        createPortal(
+          <>
+            {/* Overlay */}
+            <div
+              className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-sm"
+              onClick={close}
+              aria-hidden="true"
+            />
+            {/* Panel */}
+            <div
+              id="mobile-menu"
+              role="dialog"
+              aria-modal="true"
+              className="fixed right-0 top-0 bottom-0 z-[9999] w-[88vw] max-w-sm bg-white shadow-2xl p-6 flex flex-col"
+              ref={panelRef}
+              onKeyDown={onKeyDown}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-lg font-semibold">Menu</span>
+                <button
+                  type="button"
                   onClick={close}
-                  className={({ isActive }) =>
-                    [
-                      'min-h-12 rounded-xl px-4 py-3 text-base font-semibold text-left',
-                      isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50',
-                      item.primary ? 'ring-1 ring-pink-300 bg-pink-500 text-white hover:bg-pink-500' : '',
-                    ].join(' ')
-                  }
+                  aria-label="Close menu"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
-                  {item.label}
-                </NavLink>
-              ))}
-            </nav>
+                  <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6l-12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </div>
 
-            {/* Safe-area padding for iOS bottom inset */}
-            <div style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }} />
-          </div>
-        </>
-      )}
+              <nav className="flex flex-col gap-3 overflow-y-auto">
+                {NAV_ITEMS.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={close}
+                    className={({ isActive }) =>
+                      [
+                        'min-h-12 rounded-xl px-4 py-3 text-base font-semibold text-left',
+                        isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50',
+                        item.primary ? 'ring-1 ring-pink-300 bg-pink-500 text-white hover:bg-pink-500' : '',
+                      ].join(' ')
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                ))}
+              </nav>
+
+              {/* Safe-area padding for iOS bottom inset */}
+              <div style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }} />
+            </div>
+          </>,
+          document.body
+        )}
     </header>
   );
 }

@@ -15,8 +15,8 @@ const HomePage: React.FC = () => {
           to clearly articulate where an item can be experienced.
         </p>
 
-        {/* CTA stack: mobile-first spacing + large tap targets (iOS-safe) */}
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center sm:items-center sm:gap-4">
+        {/* CTA stack: use space-y/space-x for iOS compatibility */}
+        <div className="mt-8 flex flex-col space-y-4 sm:flex-row sm:justify-center sm:items-center sm:space-y-0 sm:space-x-4">
           <Link
             to="/petition"
             className="w-full sm:w-auto inline-flex items-center justify-center px-8 min-h-12 rounded-xl border border-transparent text-base font-semibold text-white bg-accent hover:bg-accent-dark transition-colors"

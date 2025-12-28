@@ -1,275 +1,69 @@
-import React, { useEffect, useRef, useState } from 'react';
-
-// This interface is for form state, not the global Supporter type
-interface FormData {
-  name: string;
-  email: string;
-  company: string; // optional in UI, allowed to be ""
-  role: string;
-}
-
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (el: Element | string, opts: Record<string, any>) => string;
-      reset?: (wid?: any) => void;
-      remove?: (wid?: any) => void;
-      getResponse?: (el?: Element | string) => string | null;
-    };
-  }
-}
-
-const SITE_KEY = '0x4AAAAAAB7nD-ArS5nkd4Ol';
+import React from 'react';
 
 const PetitionPage: React.FC = () => {
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    email: '',
-    company: '',
-    role: '',
-  });
-  const [subscribe, setSubscribe] = useState(true);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const widgetContainerRef = useRef<HTMLDivElement | null>(null);
-  const widgetIdRef = useRef<string | null>(null);
-
-  // Ensure Turnstile script is present and render explicitly on mount
-  useEffect(() => {
-    const ensureScript = () =>
-      new Promise<void>((resolve) => {
-        if (window.turnstile && typeof window.turnstile.render === 'function') {
-          resolve();
-          return;
-        }
-        const existing = document.querySelector<HTMLScriptElement>('script[data-turnstile="1"]');
-        if (existing) {
-          existing.addEventListener('load', () => resolve(), { once: true });
-          return;
-        }
-        const s = document.createElement('script');
-        s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-        s.async = true;
-        s.defer = true;
-        s.setAttribute('data-turnstile', '1');
-        s.addEventListener('load', () => resolve(), { once: true });
-        document.head.appendChild(s);
-      });
-
-    let isMounted = true;
-
-    (async () => {
-      await ensureScript();
-      if (!isMounted) return;
-
-      // Render widget explicitly into our container
-      if (widgetContainerRef.current && window.turnstile) {
-        // If something was rendered before, remove it
-        try { widgetIdRef.current && window.turnstile.remove?.(widgetIdRef.current); } catch {}
-        widgetIdRef.current = window.turnstile.render(widgetContainerRef.current, {
-          sitekey: SITE_KEY,
-          theme: 'auto',
-        });
-      }
-    })();
-
-    // Cleanup on unmount
-    return () => {
-      isMounted = false;
-      try { widgetIdRef.current && window.turnstile?.remove?.(widgetIdRef.current); } catch {}
-    };
-  }, []);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    // Company is OPTIONAL now
-    if (!formData.name || !formData.email || !formData.role) {
-      setError('Name, Email, and Role are required.');
-      return;
-    }
-    if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      setError('Please enter a valid email address.');
-      return;
-    }
-
-    // Read Turnstile token (from API or hidden input)
-    const tokenFromApi = window.turnstile?.getResponse?.(widgetContainerRef.current as Element);
-    const tokenInput = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]');
-    const cfTurnstileResponse = (tokenFromApi || tokenInput?.value || '').trim();
-
-    if (!cfTurnstileResponse) {
-      setError('Please verify you are human before submitting.');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      const res = await fetch('/api/supporters', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        // Backend expects the exact key "cf-turnstile-response"
-        body: JSON.stringify({
-          ...formData,
-          subscribe,
-          'cf-turnstile-response': cfTurnstileResponse,
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Something went wrong. Please try again.');
-      }
-
-      setSubmitted(true);
-      // Reset widget to avoid token reuse (best-effort)
-      try { window.turnstile?.reset?.(widgetIdRef.current as any); } catch {}
-    } catch (err: any) {
-      setError(err?.message || 'An unexpected error occurred.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="bg-brand p-8 sm:p-12 rounded-lg border border-gray-200 shadow-sm">
-        <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Support the Proposal</h1>
-        <p className="mt-4 text-gray-200">
-          If your business, museum, or gallery has a location dedicated to displaying items, your support is crucial.
-          By signing, you help us demonstrate the real-world need for this property to the schema.org community.
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 sm:p-10">
+        <div className="inline-flex items-center justify-center rounded-full bg-brand/10 px-4 py-2 text-sm text-brand-dark">
+          Status update
+        </div>
+
+        <h1 className="mt-6 text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+          The petition phase is over — displayLocation is published
+        </h1>
+
+        <p className="mt-4 text-lg text-gray-700">
+          displayLocation is now part of schema.org (v29.4, December 2025). This page remains online to preserve older
+          links and document the milestone.
         </p>
 
-        {submitted ? (
-          <div className="mt-8 p-4 bg-green-100 text-green-800 border border-green-200 rounded-md">
-            <h3 className="font-semibold">Thank you! One last step...</h3>
-            <p>
-              Please check your email to confirm your support. Your entry will be publicly listed after you click the
-              confirmation link in the email we've just sent you.
-            </p>
-          </div>
-        ) : (
-          // action/method for clarity; submit handled via JS
-          <form action="/api/supporters" method="post" onSubmit={handleSubmit} className="mt-8 space-y-6">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-200">
-                Name
-              </label>
-              <input
-                type="text"
-                name="name"
-                id="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 bg-brand-dark text-white border border-gray-500 rounded-md
-                           placeholder-gray-400 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm"
-                required
-              />
-            </div>
+        <div className="mt-8 rounded-xl bg-background p-5 border border-black/5">
+          <h2 className="text-lg font-semibold text-gray-900">What you should do now</h2>
+          <ul className="mt-3 space-y-2 text-gray-700 list-disc list-inside">
+            <li>
+              Use the official property page on schema.org as the canonical reference.
+            </li>
+            <li>
+              Implement <code className="px-1 py-0.5 rounded bg-black/5 font-mono text-sm">displayLocation</code> in your
+              JSON-LD where it makes sense (products, artworks, artifacts).
+            </li>
+            <li>
+              Share implementation examples with your ecosystem (retailers, museums, agencies, platforms).
+            </li>
+          </ul>
+        </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-200">
-                Email Address
-              </label>
-              <input
-                type="email"
-                name="email"
-                id="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 bg-brand-dark text-white border border-gray-500 rounded-md
-                           placeholder-gray-400 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm"
-                required
-              />
-            </div>
+        <div className="mt-8 flex flex-col sm:flex-row gap-3">
+          <a
+            href="https://schema.org/displayLocation"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center justify-center px-6 min-h-12 rounded-xl bg-accent text-white font-semibold hover:bg-accent-dark"
+          >
+            View schema.org displayLocation
+          </a>
 
-            <div>
-              <label htmlFor="company" className="block text-sm font-medium text-gray-200">
-                Company / Organization <span className="text-gray-400 font-normal">(optional)</span>
-              </label>
-              <input
-                type="text"
-                name="company"
-                id="company"
-                value={formData.company}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 bg-brand-dark text-white border border-gray-500 rounded-md
-                           placeholder-gray-400 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm"
-                // no "required"
-              />
-            </div>
+          <a
+            href="/proposal"
+            className="inline-flex items-center justify-center px-6 min-h-12 rounded-xl bg-white text-brand-dark font-semibold border border-black/10 hover:bg-gray-50"
+          >
+            Read implementation guide
+          </a>
+        </div>
 
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-200">
-                Role{' '}
-                <span className="text-gray-400 font-normal">
-                  (Person, business owner, director of cultural institution, etc.)
-                </span>
-              </label>
-              <input
-                type="text"
-                name="role"
-                id="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 bg-brand-dark text-white border border-gray-500 rounded-md
-                           placeholder-gray-400 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm"
-                required
-              />
-            </div>
+        <hr className="my-10" />
 
-            <div className="flex items-start">
-              <div className="flex items-center h-5">
-                <input
-                  id="subscribe"
-                  name="subscribe"
-                  type="checkbox"
-                  checked={subscribe}
-                  onChange={(e) => setSubscribe(e.target.checked)}
-                  className="focus:ring-accent h-4 w-4 text-accent border-gray-500 rounded bg-brand-dark"
-                />
-              </div>
-              <div className="ml-3 text-sm">
-                <label htmlFor="subscribe" className="text-gray-200">
-                  Subscribe to displayLocation updates (sent by showroom.fm).
-                </label>
-              </div>
-            </div>
+        <h2 className="text-2xl font-bold text-gray-900">Why this matters</h2>
+        <p className="mt-3 text-gray-700">
+          Many buying decisions and cultural experiences happen in physical spaces. When structured data can’t express
+          “this is on display here”, people lose time, institutions lose foot traffic, and AI systems can’t answer the
+          most human question: where can I see it in real life?
+        </p>
 
-            {/* Turnstile container (explicit render) */}
-            <div
-              ref={widgetContainerRef}
-              className="cf-turnstile"
-              style={{ minHeight: 65 }}
-              data-sitekey={SITE_KEY}
-              data-theme="auto"
-            />
-
-            {error && <p className="text-sm text-red-400">{error}</p>}
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-accent hover:bg-accent-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Submitting...' : 'Add My Support'}
-              </button>
-            </div>
-            <p className="text-xs text-gray-300 text-center">
-              By signing this petition, you agree that your name, role, and company name may be published on the list of
-              supporters after email verification.
-            </p>
-          </form>
-        )}
+        <p className="mt-4 text-gray-700">
+          displayLocation is a small addition with big consequences: it allows the open web to point to reality in a
+          consistent, machine-readable way.
+        </p>
       </div>
     </div>
   );

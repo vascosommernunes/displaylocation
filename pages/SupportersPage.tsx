@@ -1,19 +1,52 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
 
 type Supporter = {
+  id: number;
   name: string;
-  note?: string; // optional short descriptor (e.g., "Retailer", "Museum", "Agency", "Individual")
-  url?: string;  // optional link
+  company?: string | null;
+  role?: string | null;
 };
 
-const supporters: Supporter[] = [
-  // Add your supporters here. Examples:
-  // { name: 'Example Museum', note: 'Museum', url: 'https://example.org' },
-  // { name: 'Jane Doe', note: 'Individual' },
-];
+type ApiResponse = {
+  updatedAt: string;
+  count: number;
+  supporters: Supporter[];
+};
 
 const SupportersPage: React.FC = () => {
-  const hasSupporters = supporters.length > 0;
+  const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
+  const [data, setData] = useState<ApiResponse | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        // cache: "no-store" avoids edge/browser caching during rollout
+        const res = await fetch("/api/supporters", {
+          headers: { accept: "application/json" },
+          cache: "no-store",
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const json = (await res.json()) as ApiResponse;
+
+        if (!cancelled) {
+          setData(json);
+          setStatus("ok");
+        }
+      } catch {
+        if (!cancelled) setStatus("error");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const supporters = data?.supporters ?? [];
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -54,62 +87,71 @@ const SupportersPage: React.FC = () => {
 
         <h2 className="text-2xl font-bold text-gray-900">Supporters</h2>
 
-        {!hasSupporters ? (
-          <div className="mt-4 rounded-xl border border-black/5 bg-background p-5">
-            <p className="text-gray-700">
-              This list is being curated. If you supported the initiative during the proposal phase and want to be
-              included, please contact the project owner.
-            </p>
-            <p className="mt-3 text-sm text-gray-600">
-              (Tip: add supporters in <code className="px-1 py-0.5 rounded bg-black/5 font-mono">pages/SupportersPage.tsx</code>{' '}
-              by editing the <code className="px-1 py-0.5 rounded bg-black/5 font-mono">supporters</code> array.)
-            </p>
+        {status === "loading" && (
+          <div className="mt-4 rounded-xl border border-black/5 bg-background p-5 text-gray-700">
+            Loading supporters…
           </div>
-        ) : (
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            {supporters.map((s) => {
-              const CardInner = (
-                <div className="rounded-2xl bg-white p-5 shadow-sm border border-black/5 hover:border-black/10 transition">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="text-base font-semibold text-gray-900">{s.name}</div>
-                      {s.note ? (
-                        <div className="mt-1 text-sm text-gray-600">{s.note}</div>
-                      ) : null}
-                    </div>
-                    {s.url ? (
-                      <span className="text-sm text-brand-dark underline underline-offset-4">
-                        ↗
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-              );
+        )}
 
-              return s.url ? (
-                <a
-                  key={s.name}
-                  href={s.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block"
-                  aria-label={`Open ${s.name}`}
-                >
-                  {CardInner}
-                </a>
-              ) : (
-                <div key={s.name}>{CardInner}</div>
-              );
-            })}
+        {status === "error" && (
+          <div className="mt-4 rounded-xl border border-black/5 bg-background p-5 text-gray-700">
+            Supporters could not be loaded right now.
+            <div className="mt-2 text-sm text-gray-600">
+              The endpoint <code className="px-1 py-0.5 rounded bg-black/5 font-mono">/api/supporters</code> should return JSON.
+            </div>
           </div>
+        )}
+
+        {status === "ok" && supporters.length === 0 && (
+          <div className="mt-4 rounded-xl border border-black/5 bg-background p-5 text-gray-700">
+            No supporters found.
+          </div>
+        )}
+
+        {status === "ok" && supporters.length > 0 && (
+          <>
+            <div className="mt-4 text-sm text-gray-600">
+              {data?.count} supporter{data?.count === 1 ? "" : "s"} acknowledged.
+            </div>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              {supporters.map((s) => (
+                <div
+                  key={s.id}
+                  className="rounded-2xl bg-white p-5 shadow-sm border border-black/5"
+                >
+                  <div className="text-base font-semibold text-gray-900">
+                    {s.name}
+                  </div>
+
+                  {(s.role || s.company) && (
+                    <div className="mt-2 text-sm text-gray-700">
+                      {s.role ? (
+                        <span className="font-medium">{s.role}</span>
+                      ) : null}
+                      {s.role && s.company ? (
+                        <span className="text-gray-400"> • </span>
+                      ) : null}
+                      {s.company ? <span>{s.company}</span> : null}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         <hr className="my-10" />
 
         <h2 className="text-2xl font-bold text-gray-900">Thanks</h2>
         <p className="mt-3 text-gray-700">
-          Special thanks to the schema.org community and everyone who contributed feedback and review during the
-          public discussion process.
+          Thank you to everyone who supported the proposal and took the time to contribute feedback.
+          Special thanks to the schema.org community and reviewers who helped bring displayLocation into the standard.
+        </p>
+
+        <p className="mt-4 text-sm text-gray-600">
+          Privacy note: this page intentionally publishes only acknowledgement fields (name, role, company).
+          Emails and internal tokens are never exposed.
         </p>
       </div>
     </div>

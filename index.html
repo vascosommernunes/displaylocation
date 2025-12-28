@@ -2,10 +2,34 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="DisplayLocation.org promotes a schema.org extension that links products, artworks, and artifacts to the real places they’re on display—so people and AI can find where to experience them now." />
-    <title>displaylocation.org | A schema.org proposal</title>
+
+    <meta
+      name="description"
+      content="displayLocation is published in schema.org (v29.4, December 2025). It links products, artworks, and artifacts to the real places they’re on display—so people and AI can find where to experience them in person."
+    />
+    <title>displaylocation.org | displayLocation is live in schema.org</title>
+
+    <link rel="canonical" href="https://displaylocation.org/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="displayLocation is live in schema.org" />
+    <meta
+      property="og:description"
+      content="A schema.org property linking items to the places where they’re on display—so people and AI can find where to experience them in person."
+    />
+    <meta property="og:url" content="https://displaylocation.org/" />
+    <meta property="og:image" content="https://displaylocation.org/og.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="displayLocation is live in schema.org" />
+    <meta
+      name="twitter:description"
+      content="Link items to the places where they’re on display—so people and AI can find where to experience them in person."
+    />
+    <meta name="twitter:image" content="https://displaylocation.org/og.png" />
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -21,25 +45,27 @@
                 dark: '#d94698',
               },
               background: '#f9f3e6',
-            }
-          }
+            },
+          },
+        },
+      };
+    </script>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "react/": "https://aistudiocdn.com/react@^19.2.0/",
+          "react": "https://aistudiocdn.com/react@^19.2.0",
+          "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+          "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.4"
         }
       }
     </script>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.4"
-  }
-}
-</script>
-</head>
+
+    <script type="module" crossorigin src="/assets/index-BkDXe_9Y.js"></script>
+  </head>
+
   <body>
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   </body>
 </html>

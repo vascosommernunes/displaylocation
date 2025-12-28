@@ -4,75 +4,109 @@ import { Link } from 'react-router-dom';
 const HomePage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto text-center">
+      {/* HERO */}
       <div className="bg-brand p-8 sm:p-12 rounded-lg shadow-lg">
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
-          A schema.org property for showrooms, galleries, and display locations.
+        <div className="inline-flex items-center justify-center rounded-full bg-white/15 px-4 py-2 text-sm text-white">
+          Published in schema.org v29.4 (Dec 2025)
+        </div>
+
+        <h1 className="mt-6 text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
+          displayLocation is now live in schema.org
         </h1>
 
         <p className="mt-6 text-lg text-gray-200 max-w-2xl mx-auto">
-          For businesses with showrooms and museums with galleries, current schema.org options are inadequate. We propose{' '}
-          <code className="bg-brand-dark text-gray-100 px-2 py-1 rounded-md text-base font-mono">displaylocation</code>{' '}
-          to clearly articulate where an item can be experienced.
+          A simple, universal way to link a product, artwork, or artifact to the real-world place where it’s
+          currently on display — so people and AI can answer: “Where can I experience this in person?”
         </p>
 
-        {/* CTA stack: use space-y/space-x for iOS compatibility */}
+        {/* CTA STACK */}
         <div className="mt-8 flex flex-col space-y-4 sm:flex-row sm:justify-center sm:items-center sm:space-y-0 sm:space-x-4">
-          <Link
-            to="/petition"
-            className="w-full sm:w-auto inline-flex items-center justify-center px-8 min-h-12 rounded-xl border border-transparent text-base font-semibold text-white bg-accent hover:bg-accent-dark transition-colors"
+          <a
+            href="https://schema.org/displayLocation"
+            target="_blank"
+            rel="noreferrer"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-8 min-h-12 rounded-xl border border-transparent text-base font-semibold text-white bg-accent hover:bg-accent-dark"
           >
-            Sign the Petition
-          </Link>
+            View schema.org property
+          </a>
 
           <Link
             to="/proposal"
-            className="w-full sm:w-auto inline-flex items-center justify-center px-8 min-h-12 rounded-xl border border-transparent text-base font-semibold text-brand-dark bg-white hover:bg-gray-100 transition-colors"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-8 min-h-12 rounded-xl border border-transparent text-base font-semibold text-brand-dark bg-white hover:bg-gray-50"
           >
-            Learn More
+            Implementation guide
+          </Link>
+        </div>
+
+        {/* SMALL LINKS */}
+        <div className="mt-6 text-sm text-gray-200 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center">
+          <Link to="/petition" className="underline underline-offset-4 hover:text-white">
+            What changed?
+          </Link>
+          <span className="hidden sm:inline">•</span>
+          <Link to="/faq" className="underline underline-offset-4 hover:text-white">
+            FAQ
           </Link>
         </div>
       </div>
 
-      <div className="mt-16">
-        <h2 className="text-3xl font-bold text-gray-900">Answering the Customer's Core Question</h2>
-        <blockquote className="mt-4 text-3xl font-medium text-gray-700 italic">
-          "Where can I try this today?"
-        </blockquote>
-        <p className="mt-4 text-gray-600 max-w-3xl mx-auto">
-          In today's digital-first world, this is the final step in many customer journeys. They've researched online; now
-          they want to experience your products or art in person. Our proposal helps you provide a clear, immediate answer
-          right where they're looking: on the search results page.
+      {/* BODY SECTIONS */}
+      <div className="mt-16 text-left">
+        <h2 className="text-3xl font-bold text-gray-900">What problem does this solve?</h2>
+        <p className="mt-4 text-lg text-gray-700">
+          The web could describe what things are (Product, CreativeWork) and where they’re sold — but not where they’re
+          physically on display to view and experience. displayLocation fills that gap.
         </p>
-      </div>
 
-      <div className="mt-16">
-        <h2 className="text-3xl font-bold text-gray-900">What is schema?</h2>
-        <p className="mt-4 text-gray-600 max-w-3xl mx-auto">
-          Schema was introduced by Google, Microsoft, Yahoo and Yandex in order for search engines to understand webpages
-          better. By adding small schemas to your website code, a search engine and AI can easier understand that a page is
-          an article or a product or event page. Website owners can already tell search engines that a product is{' '}
-          <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm">instock</code> or{' '}
-          <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm">containedInPlace</code> but
-          this does not mean that an item can be experienced. We propose to expand schema by a small extension, so that
-          search engines can understand that an item can actually be experienced at a certain place.
-        </p>
-      </div>
+        <div className="mt-10 grid gap-6 sm:grid-cols-2">
+          <div className="rounded-2xl bg-white p-6 shadow-sm border border-black/5">
+            <h3 className="text-lg font-semibold text-gray-900">For consumers</h3>
+            <p className="mt-2 text-gray-700">
+              Find where you can see a specific item in person before making a decision — showrooms, galleries,
+              museums, exhibitions.
+            </p>
+          </div>
 
-      <div className="mt-16">
-        <h2 className="text-3xl font-bold text-gray-900">Why this matters</h2>
-        <p className="mt-4 text-gray-600 max-w-3xl mx-auto">
-          Whether you run a furniture showroom or curate a museum exhibit, it’s crucial that search engines understand the
-          purpose of your locations. Clear data means better search results, managed customer expectations, and a more
-          accurate representation of your physical presence on the web.
-        </p>
-      </div>
+          <div className="rounded-2xl bg-white p-6 shadow-sm border border-black/5">
+            <h3 className="text-lg font-semibold text-gray-900">For businesses & institutions</h3>
+            <p className="mt-2 text-gray-700">
+              Publish verifiable, location-specific “on display” information in a machine-readable format that AI
+              systems can reference.
+            </p>
+          </div>
 
-      <div className="mt-16">
-        <p className="text-xl font-semibold text-gray-800">
-          <Link to="/petition" className="text-brand hover:underline">
-            Please sign the petition today.
+          <div className="rounded-2xl bg-white p-6 shadow-sm border border-black/5">
+            <h3 className="text-lg font-semibold text-gray-900">For search engines & AI</h3>
+            <p className="mt-2 text-gray-700">
+              A consistent way to connect items to real places — enabling better answers to “where can I experience
+              this now?”
+            </p>
+          </div>
+
+          <div className="rounded-2xl bg-white p-6 shadow-sm border border-black/5">
+            <h3 className="text-lg font-semibold text-gray-900">For the open web</h3>
+            <p className="mt-2 text-gray-700">
+              A small standard addition that makes the physical world more discoverable — across industries, globally.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-12 flex flex-col sm:flex-row gap-3">
+          <a
+            href="https://schema.org/displayLocation"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center justify-center px-6 min-h-12 rounded-xl bg-brand text-white font-semibold hover:bg-brand-dark"
+          >
+            Open the schema definition
+          </a>
+          <Link
+            to="/proposal"
+            className="inline-flex items-center justify-center px-6 min-h-12 rounded-xl bg-white text-brand-dark font-semibold border border-black/10 hover:bg-gray-50"
+          >
+            See implementation examples
           </Link>
-        </p>
+        </div>
       </div>
     </div>
   );

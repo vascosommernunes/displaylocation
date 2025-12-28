@@ -93,27 +93,43 @@ const App: React.FC = () => {
         </main>
 
         {/* FOOTER */}
-        <footer className="border-t border-black/5">
-          <div className="max-w-6xl mx-auto px-4 py-8 text-sm text-gray-600 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-between">
-            <div>© {new Date().getFullYear()} displaylocation.org</div>
-            <div className="flex gap-4">
-              <a
-                href="https://schema.org/displayLocation"
-                target="_blank"
-                rel="noreferrer"
-                className="hover:underline"
-              >
-                schema.org
-              </a>
-              <a href="/supporters" className="hover:underline">
-                Supporters
-              </a>
-              <a href="/imprint" className="hover:underline">
-                Imprint
-              </a>
-            </div>
-          </div>
-        </footer>
+<footer className="border-t border-black/5">
+  <div className="max-w-6xl mx-auto px-4 py-8 text-sm text-gray-600 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between">
+    <div>
+      © {new Date().getFullYear()} displaylocation.org
+      <span className="mx-2 text-gray-400">•</span>
+      <span>
+        an initiative by{" "}
+        <a
+          href="https://www.showroom.fm"
+          target="_blank"
+          rel="noreferrer"
+          className="font-medium text-brand-dark hover:underline"
+        >
+          showroom.fm
+        </a>
+      </span>
+    </div>
+
+    <div className="flex gap-4">
+      <a
+        href="https://schema.org/displayLocation"
+        target="_blank"
+        rel="noreferrer"
+        className="hover:underline"
+      >
+        schema.org
+      </a>
+      <a href="/supporters" className="hover:underline">
+        Supporters
+      </a>
+      <a href="/imprint" className="hover:underline">
+        Imprint
+      </a>
+    </div>
+  </div>
+</footer>
+
       </div>
     </Router>
   );

@@ -72,7 +72,7 @@ const FaqPage: React.FC = () => {
               rel="noreferrer"
               className="font-medium text-brand hover:underline"
             >
-              https://blog.displaylocation.org
+              https://blog.showroom.fm
             </a>
           </p>
         </FaqItem>

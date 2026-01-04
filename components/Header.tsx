@@ -9,7 +9,7 @@ type NavItem = { to: string; label: string; primary?: boolean };
 
 const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Home' },
-  { to: '/proposal', label: 'The Proposal' },
+  { to: '/proposal', label: 'Implementation' },
   { to: '/petition', label: 'Petition', primary: true },
   { to: '/supporters', label: 'Supporters' },
   { to: '/faq', label: 'FAQ' },
@@ -48,7 +48,7 @@ export default function Header(): JSX.Element {
             <nav className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
                 <NavLink to="/" className={navLinkClasses}>Home</NavLink>
-                <NavLink to="/proposal" className={navLinkClasses}>The Proposal</NavLink>
+                <NavLink to="/proposal" className={navLinkClasses}>Implementation</NavLink>
                 <NavLink to="/petition" className={navLinkClasses}>Petition</NavLink>
                 <NavLink to="/supporters" className={navLinkClasses}>Supporters</NavLink>
                 <NavLink to="/faq" className={navLinkClasses}>FAQ</NavLink>

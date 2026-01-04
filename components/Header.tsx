@@ -2,7 +2,8 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { NavLink } from 'react-router-dom';
 
-const NAV_V2 = String(import.meta.env.VITE_NAV_V2 ?? '') === '1';
+// Default to the mobile-first navigation unless explicitly disabled
+const NAV_V2 = String(import.meta.env.VITE_NAV_V2 ?? '1') === '1';
 
 type NavItem = { to: string; label: string; primary?: boolean };
 

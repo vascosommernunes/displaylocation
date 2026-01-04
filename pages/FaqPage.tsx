@@ -67,7 +67,7 @@ const FaqPage: React.FC = () => {
           <p>
             Background and timeline:{' '}
             <a
-              href="https://blog.displaylocation.org"
+              href="https://blog.showroom.fm"
               target="_blank"
               rel="noreferrer"
               className="font-medium text-brand hover:underline"

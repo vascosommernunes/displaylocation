@@ -21,7 +21,7 @@ const Header: React.FC = () => {
           <nav className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
               <NavLink to="/" className={navLinkClasses}>Home</NavLink>
-              <NavLink to="/proposal" className={navLinkClasses}>The Proposal</NavLink>
+              <NavLink to="/proposal" className={navLinkClasses}>Implementation</NavLink>
               <NavLink to="/petition" className={navLinkClasses}>Petition</NavLink>
               <NavLink to="/supporters" className={navLinkClasses}>Supporters</NavLink>
               <NavLink to="/faq" className={navLinkClasses}>FAQ</NavLink>

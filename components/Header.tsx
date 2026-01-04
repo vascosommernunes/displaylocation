@@ -2,13 +2,14 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { NavLink } from 'react-router-dom';
 
-const NAV_V2 = String(import.meta.env.VITE_NAV_V2 ?? '') === '1';
+// Default to the mobile-first navigation unless explicitly disabled
+const NAV_V2 = String(import.meta.env.VITE_NAV_V2 ?? '1') === '1';
 
 type NavItem = { to: string; label: string; primary?: boolean };
 
 const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Home' },
-  { to: '/proposal', label: 'The Proposal' },
+  { to: '/proposal', label: 'Implementation' },
   { to: '/petition', label: 'Petition', primary: true },
   { to: '/supporters', label: 'Supporters' },
   { to: '/faq', label: 'FAQ' },
@@ -47,7 +48,7 @@ export default function Header(): JSX.Element {
             <nav className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
                 <NavLink to="/" className={navLinkClasses}>Home</NavLink>
-                <NavLink to="/proposal" className={navLinkClasses}>The Proposal</NavLink>
+                <NavLink to="/proposal" className={navLinkClasses}>Implementation</NavLink>
                 <NavLink to="/petition" className={navLinkClasses}>Petition</NavLink>
                 <NavLink to="/supporters" className={navLinkClasses}>Supporters</NavLink>
                 <NavLink to="/faq" className={navLinkClasses}>FAQ</NavLink>

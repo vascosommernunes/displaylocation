@@ -58,6 +58,24 @@ const FaqPage: React.FC = () => {
             </li>
           </ul>
         </FaqItem>
+        <FaqItem question="Who initiated the displayLocation proposal?">
+          <p>
+            The proposal was initiated by showroom.fm and submitted to schema.org as an open standard extension. While the initiative
+            originated from work on showroom data, displayLocation is designed to be tool-agnostic and applicable to any industry where physical
+            objects are exhibited or experienced in person.
+          </p>
+          <p>
+            Background and timeline:{' '}
+            <a
+              href="https://blog.displaylocation.org"
+              target="_blank"
+              rel="noreferrer"
+              className="font-medium text-brand hover:underline"
+            >
+              https://blog.displaylocation.org
+            </a>
+          </p>
+        </FaqItem>
         <FaqItem question="How can I help besides signing the petition?">
           <p>
             Sharing this website with other business owners or managers of cultural institutions in your network is a great way to help. If you're technically inclined, you can also join the discussion on the{' '}

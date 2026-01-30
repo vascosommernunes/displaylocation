@@ -61,14 +61,7 @@ const App: React.FC = () => {
       <span className="mx-2 text-gray-400">•</span>
       <span>
         an initiative by{" "}
-        <a
-          href="https://www.showroom.fm"
-          target="_blank"
-          rel="noreferrer"
-          className="font-medium text-brand-dark hover:underline"
-        >
           showroom.fm
-        </a>
       </span>
     </div>
 

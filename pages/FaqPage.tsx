@@ -60,7 +60,13 @@ const FaqPage: React.FC = () => {
         </FaqItem>
         <FaqItem question="Who initiated the displayLocation proposal?">
           <p>
-            The proposal was initiated by showroom.fm and submitted to schema.org as an open standard extension. While the initiative
+            The proposal was initiated by   <a
+              href="https://www.showroom.fm"
+              target="_blank"
+              rel="noreferrer"
+              className="font-medium text-brand hover:underline"
+            >
+          showroom.fm</a> and submitted to schema.org as an open standard extension. While the initiative
             originated from work on showroom data, displayLocation is designed to be tool-agnostic and applicable to any industry where physical
             objects are exhibited or experienced in person.
           </p>

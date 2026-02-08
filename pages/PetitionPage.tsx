@@ -64,6 +64,15 @@ const PetitionPage: React.FC = () => {
           displayLocation is a small addition with big consequences: it allows the open web to point to reality in a
           consistent, machine-readable way.
         </p>
+
+Proposed by <a
+            href="https://www.showroom.fm"
+            target="_blank"
+            rel="noreferrer"
+                      >
+            showroom.fm
+          </a> in October 2025.
+        
       </div>
     </div>
   );

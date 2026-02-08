@@ -66,14 +66,6 @@ const App: React.FC = () => {
     </div>
 
     <div className="flex gap-4">
-      <a
-        href="https://schema.org/displayLocation"
-        target="_blank"
-        rel="noreferrer"
-        className="hover:underline"
-      >
-        schema.org
-      </a>
       <a href="/supporters" className="hover:underline">
         Supporters
       </a>

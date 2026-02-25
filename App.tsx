@@ -17,7 +17,7 @@ const App: React.FC = () => {
         <Header />
 
         {/* MAIN CONTENT */}
-        <main className="max-w-6xl mx-auto px-4 pb-16">
+        <main className="max-w-6xl mx-auto px-4 pt-10 pb-16">
           <Routes>
             <Route path="/" element={<HomePage />} />
 

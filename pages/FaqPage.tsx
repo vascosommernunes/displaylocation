@@ -82,6 +82,60 @@ const FaqPage: React.FC = () => {
             </a>
           </p>
         </FaqItem>
+        <FaqItem question="Is displayLocation relevant for brick-and-mortar retail?">
+          <p>
+            Yes, though the reason is often misunderstood. The standard guidance for retail SEO correctly points to{' '}
+            <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm">LocalBusiness</code>{' '}
+            schema — with name, address, and opening hours — as the foundation for local search visibility. That
+            remains true. <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm">displayLocation</code>{' '}
+            addresses a different and complementary question.
+          </p>
+          <p>
+            <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm">LocalBusiness</code>{' '}
+            describes that a store exists and where it is.{' '}
+            <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm">displayLocation</code>{' '}
+            describes that a specific product is physically present and available to experience at a specific location.
+            These are different facts, and only the second makes the physical presence of a product machine-readable.
+          </p>
+          <p>
+            For retailers where the in-person experience is part of the offering — furniture showrooms, car
+            dealerships, appliance demo floors, luxury goods — this distinction is meaningful. A product page marked
+            up with <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm">displayLocation</code>{' '}
+            gives search engines and AI assistants a structured, verifiable answer to queries such as:{' '}
+            <em>"Where can I experience this product in person?"</em>
+          </p>
+        </FaqItem>
+        <FaqItem question="Does LocalBusiness schema already cover what displayLocation does?">
+          <p>
+            No. <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm">LocalBusiness</code>{' '}
+            describes the store: its name, address, opening hours, contact details, and product categories. It answers
+            the question <em>"where is this business?"</em>
+          </p>
+          <p>
+            <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm">displayLocation</code>{' '}
+            is a property on a <strong>product</strong> or <strong>work</strong>, not on the business itself. It
+            answers the question <em>"where is this specific item currently on display?"</em> — a relationship
+            that <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm">LocalBusiness</code>{' '}
+            has no mechanism to express. The two schemas are complementary, not overlapping.
+          </p>
+        </FaqItem>
+        <FaqItem question="Is displayLocation relevant for museums and cultural institutions?">
+          <p>
+            Partially. Temporary exhibitions are already well covered by{' '}
+            <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm">ExhibitionEvent</code>,
+            which captures the event, its dates, location, and linked works. That schema type covers this case well
+            and should remain the primary tool for temporary shows.
+          </p>
+          <p>
+            <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm">displayLocation</code>{' '}
+            is useful for a narrower situation: permanent collection items that reside in a specific gallery on an
+            ongoing basis, not tied to any particular exhibition. Modelling a permanently displayed work as an{' '}
+            <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm">ExhibitionEvent</code>{' '}
+            is semantically imprecise, as that type implies a temporary event with defined dates.{' '}
+            <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm">displayLocation</code>{' '}
+            is the more accurate model for a stable, ongoing display relationship.
+          </p>
+        </FaqItem>
         <FaqItem question="How can I help besides signing the petition?">
           <p>
             Sharing this website with other business owners or managers of cultural institutions in your network is a great way to help. If you're technically inclined, you can also join the discussion on the{' '}

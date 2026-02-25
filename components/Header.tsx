@@ -9,6 +9,7 @@ type NavItem = { to: string; label: string; primary?: boolean };
 
 const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Home' },
+  { to: '/use-cases', label: 'Where it helps' },
   { to: '/proposal', label: 'Implementation' },
   { to: '/petition', label: 'Petition', primary: true },
   { to: '/supporters', label: 'Supporters' },

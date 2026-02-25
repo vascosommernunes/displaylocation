@@ -7,6 +7,7 @@ import ImprintPage from './pages/ImprintPage';
 import PetitionPage from './pages/PetitionPage';
 import ProposalPage from './pages/ProposalPage';
 import SupportersPage from './pages/SupportersPage';
+import UseCasesPage from './pages/UseCasesPage';
 import Header from './components/Header';
 
 const App: React.FC = () => {
@@ -25,6 +26,9 @@ const App: React.FC = () => {
 
             {/* Proposal page → implementation guide */}
             <Route path="/proposal" element={<ProposalPage />} />
+
+            {/* Use cases page — where displayLocation helps */}
+            <Route path="/use-cases" element={<UseCasesPage />} />
 
             <Route path="/supporters" element={<SupportersPage />} />
             <Route path="/faq" element={<FaqPage />} />
